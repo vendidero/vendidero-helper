@@ -19,8 +19,15 @@ class VD_Updater {
 		else {
 			if ( $request->get_response( "notice" ) )
 				$this->add_notice( (array) $request->get_response( "notice" ), 'error' );
-			if ( $request->get_response( "payload" ) )
-				$transient->response[ ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file ) ] = (array) $request->get_response( "payload" );
+			if ( $request->get_response( "payload" ) ) {
+				$payload = $request->get_response( "payload" );
+				// Do only add transient if remote version is newer than local version
+				if ( version_compare( $payload->new_version, $this->product->Version, "<=" ) )
+					return $transient;
+				if ( $this->product->is_theme() )
+					$payload = (array) $payload;
+				$transient->response[ ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file ) ] = $payload;
+			}
 		}
 	    return $transient;
 	}

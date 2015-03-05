@@ -33,6 +33,7 @@ class VD_Admin_License_Table extends WP_List_Table {
 	        case 'product':
 	        case 'product_status':
 	        case 'product_version':
+	        case 'product_expires':
 	            return $item[$column_name];
 	        break;
 	    }
@@ -46,6 +47,7 @@ class VD_Admin_License_Table extends WP_List_Table {
         $columns = array(
             'product_name' => __( 'Product', 'vendidero-helper' ),
             'product_version' => __( 'Version', 'vendidero-helper' ),
+            'product_expires' => __( 'Update & Support', 'vendidero-helper' ),
             'product_status' => __( 'License Key', 'vendidero-helper' )
         );
          return $columns;
@@ -53,6 +55,15 @@ class VD_Admin_License_Table extends WP_List_Table {
 
 	public function column_product_name ( $item ) {
 		return wpautop( '<strong>' . $item->Name . '</strong>' );
+	}
+
+	public function column_product_expires ( $item ) {
+		if ( $item->get_expiration_date() ) {
+			if ( $item->has_expired() )
+				return '<a href="' . $item->get_url() . '" class="button-secondary" target="_blank">' . __( 'renew now', 'vendidero' ) . '</a>';
+			return $item->get_expiration_date();
+		}
+		return '-';
 	}
 
 	public function column_product_version ( $item ) {
@@ -65,7 +76,7 @@ class VD_Admin_License_Table extends WP_List_Table {
 			$unregister_url = wp_nonce_url( add_query_arg( 'action', 'vd_unregister', add_query_arg( 'filepath', $item->file, add_query_arg( 'page', 'vendidero', admin_url( 'index.php' ) ) ) ), 'bulk_licenses' );
 			$response = '<a href="' . esc_url( $unregister_url ) . '">' . __( 'Unregister', 'vendidero-helper' ) . '</a>' . "\n";
 		} else {
-			$response .= '<input name="license_keys[' . esc_attr( $item->file ) . ']" id="license_keys-' . esc_attr( $item->file ) . '" type="text" value="" size="37" aria-required="true" placeholder="' . esc_attr( sprintf( __( 'Place %s license key here', 'vendidero-helper' ), $item->Name ) ) . '" />' . "\n";
+			$response .= '<input name="license_keys[' . esc_attr( $item->file ) . ']" id="license_keys-' . esc_attr( $item->file ) . '" type="text" value="" style="width: 100%" aria-required="true" placeholder="' . esc_attr( sprintf( __( 'Place %s license key here', 'vendidero-helper' ), $item->Name ) ) . '" />' . "\n";
 		}
 		return $response;
 	}

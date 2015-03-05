@@ -23,7 +23,7 @@ final class Vendidero_Helper {
     public $version = '1.0.1';
 
     private $token = 'vendidero-api';
-    private $api_url = 'http://localhost/vendisale/vd-api/';
+    private $api_url = 'https://localhost/vendisale/vd-api/';
     private $products = array();
     public $api = null;
     public $plugins = array();
@@ -49,6 +49,8 @@ final class Vendidero_Helper {
             spl_autoload_register( "__autoload" );
         spl_autoload_register( array( $this, 'autoload' ) );
 
+        add_filter( 'cron_schedules', array( $this, 'set_weekly_schedule' ) );
+
         register_activation_hook( __FILE__, array( $this, 'install' ) );
 
         // Hooks
@@ -56,18 +58,71 @@ final class Vendidero_Helper {
         
         if ( is_admin() )
             $this->init();
+
+        add_action( 'vendidero_cron', array( $this, 'expire_cron' ), 0 );
+        // add_action( 'init', array( $this, 'expire_cron' ) );
+    }
+
+    public function set_weekly_schedule( $schedules ) {
+        $schedules[ 'weekly' ] = array(
+            'interval' => 604800,
+            'display'  => __( 'Once per week', 'vendidero' ),
+        );
+        return $schedules;
     }
 
     public function init() {
         // Hook
         $this->api = new VD_API();
         $this->includes();
-        add_action( 'admin_init', array( $this, 'set_data' ), 0 );
-        add_action( 'admin_init', array( $this, 'register_products' ), 1 );
-        add_action( 'admin_init', array( $this, 'update_products' ), 2 );
+        add_action( 'admin_init', array( $this, 'load' ), 0 );
+        add_action( 'admin_init', array( $this, 'check_notice_hide' ) );
+        add_action( 'admin_notices', array( $this, 'expire_notice' ), 0 );
+    }
+
+    public function load() {
+        $this->set_data();
+        $this->register_products();
+        $this->update_products();
+    }
+
+    public function expire_cron() {
+        $this->api = new VD_API();
+        $this->includes();
+        $this->load();
+        if ( ! empty( $this->products ) ) {
+            foreach ( $this->products as $key => $product ) {
+                if ( ! $product->is_registered() )
+                    continue;
+                $expire = VD()->api->expiration_check( $product );
+                if ( $expire )
+                    $product->set_expiration_date( $expire );
+                if ( $expire = $product->get_expiration_date( false ) ) {
+                    $diff = VD()->get_date_diff( date( 'Y-m-d' ), $expire );
+                    $notice = get_option( 'vendidero_notice_expire', array() );
+                    if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff[ 'y' ] ) && empty( $diff[ 'm' ] ) && $diff[ 'd' ] <= 7 ) )
+                        $notice[ $key ] = true;
+                    update_option( 'vendidero_notice_expire', $notice );
+                }
+            }
+        }
+    }
+
+    public function check_notice_hide() {
+        if ( isset( $_GET[ 'notice' ] ) && $_GET[ 'notice' ] == 'vd-hide-notice' && check_admin_referer( 'vd-hide-notice', 'nonce' ) ) {
+            delete_option( 'vendidero_notice_expire' );
+            remove_action( 'admin_notices', array( $this, 'expire_notice' ), 0 );
+        }
+    }
+
+    public function expire_notice() {
+        if ( get_option( 'vendidero_notice_expire' ) )
+            include_once( 'screens/screen-notice-expire.php' );
     }
 
     public function set_data() {
+        if ( ! function_exists( 'get_plugins' ) )
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
         $this->plugins = get_plugins();
         $themes = wp_get_themes();
         if ( ! empty( $themes ) ) {
@@ -79,6 +134,8 @@ final class Vendidero_Helper {
     public function install() {
         if ( $this->version != '' )
             update_option( 'vendidero_version', $this->version );
+        wp_clear_scheduled_hook( 'vendidero_cron' );
+        wp_schedule_event( time(), 'weekly', 'vendidero_cron' );
     }
 
     /**
@@ -156,12 +213,31 @@ final class Vendidero_Helper {
         return $products;
     }
 
+    public function get_product( $key ) {
+        return ( isset( $this->products[ $key ] ) ? $this->products[ $key ] : false );
+    }
+
     public function get_api_url() {
         return $this->api_url;
     }
 
     public function get_token() {
         return $this->token;
+    }
+
+    /**
+     * PHP 5.3 backwards compatibility for getting date diff
+     *  
+     * @param  string $from date from
+     * @param  string $to   date to
+     * @return array  array containing year, month, date diff
+     */
+    public function get_date_diff( $from, $to ) {
+        $diff = abs( strtotime( $to ) - strtotime( $from ) );
+        $years = floor( $diff / (365*60*60*24) );
+        $months = floor( ( $diff - $years * 365*60*60*24 ) / ( 30*60*60*24 ) );
+        $days = floor( ( $diff - $years * 365*60*60*24 - $months*30*60*60*24 ) / ( 60*60*24 ) );
+        return array( 'y' => $years, 'm' => $months, 'd' => $days );
     }
 
     /**

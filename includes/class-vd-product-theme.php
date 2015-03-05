@@ -19,6 +19,10 @@ class VD_Product_Theme extends VD_Product {
 		return ( $this->meta->__get( $key ) ? true : false );
 	}
 
+	public function get_url() {
+		return $this->ThemeURI;
+	}
+
 }
 
 ?>

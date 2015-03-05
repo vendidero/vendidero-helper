@@ -4,6 +4,7 @@ class VD_Request {
 
 	public $product = null;
 	private $response = null;
+	private $raw = null;
 	private $args = array();
 
 	public function __construct( $type = 'update_check', VD_Product $product = null, $args = array() ) {
@@ -13,11 +14,11 @@ class VD_Request {
 				'product_id' => $product->id,
 				'product_file' => $product->file,
 				'product_type' => ( $product->is_theme() ? 'theme' : 'plugin' ),
-				'key' => ( $product->is_registered() ? $product->get_key( true ) : false ),
+				'key' => ( $product->is_registered() ? $product->get_key() : false ),
 			);
 		}
 		$this->args[ 'home_url' ] = esc_url( home_url( '/' ) );
-		if ( ! in_array( $type, array( 'update_check', 'update', 'ping', 'register', 'unregister', 'check_license', 'generator' ) ) )
+		if ( ! in_array( $type, array( 'update_check', 'update', 'ping', 'register', 'unregister', 'expiration_check', 'license_check', 'generator_version_check', 'generator_check', 'generator_result_check' ) ) )
 			return new WP_Error( __( 'Request method not supported', 'vendidero' ) );
 		$this->args = array_merge( $this->args, $args );
 		$this->args[ 'request' ] = $type;
@@ -31,7 +32,7 @@ class VD_Request {
 
 	public function do_request() {
 		// Send request
-	    $request = wp_remote_post( VD()->get_api_url(), array(
+	    $this->raw = wp_remote_post( VD()->get_api_url(), array(
 			'method'      => 'POST',
 			'timeout'     => 45,
 			'redirection' => 5,
@@ -42,8 +43,8 @@ class VD_Request {
 			'cookies'     => array(),
 			'sslverify'   => false
 		) );
-	    if ( $request != '' )
-	    	$this->response = json_decode( wp_remote_retrieve_body( $request ) );
+	    if ( $this->raw != '' )
+	    	$this->response = json_decode( wp_remote_retrieve_body( $this->raw ) );
 	}
 
 	public function is_error() {
