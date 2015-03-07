@@ -23,7 +23,7 @@ final class Vendidero_Helper {
     public $version = '1.0.1';
 
     private $token = 'vendidero-api';
-    private $api_url = 'https://localhost/vendisale/vd-api/';
+    private $api_url = 'https://vendidero.de/vd-api/';
     private $products = array();
     public $api = null;
     public $plugins = array();
@@ -176,7 +176,7 @@ final class Vendidero_Helper {
                 if ( is_object( $plugin ) && ! empty( $plugin->file ) && ! empty( $plugin->product_id ) )
                     $this->add_product( $plugin->file, $plugin->product_id );
         // Self update
-        $this->add_product( 'vendidero-helper/vendidero-helper.php', 2711, true );
+        $this->add_product( 'vendidero-helper/vendidero-helper.php', 2198, true );
     }
 
     public function update_products() {
