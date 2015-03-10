@@ -42,7 +42,7 @@ class VD_API {
 
 	public function generator_version_check( VD_Product $product, $generator ) {
 		$request = new VD_Request( 'generator_version_check', $product, array( 'generator' => sanitize_title( $generator ) ) );
-		return ( ! $request->is_error() ? $request->get_response( "version" ) : false );
+		return ( ! $request->is_error() ? $request->get_response( 'all' ) : false );
 	}
 
 	public function generator_check( VD_Product $product, $generator, $settings = array() ) {

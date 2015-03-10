@@ -63,7 +63,9 @@ class VD_Request {
 				return $this->response->payload;
 			else if ( isset( $this->response->success ) )
 				return $this->response->success;
-		} else if ( isset( $this->response->$type ) )
+		} else if ( $type == 'all' )
+			return $this->response;
+		else if ( isset( $this->response->$type ) )
 			return $this->response->$type;
 		return false;
 	}
