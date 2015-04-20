@@ -20,7 +20,7 @@ final class Vendidero_Helper {
      */
     protected static $_instance = null;
 
-    public $version = '1.0.1';
+    public $version = '1.0.0';
 
     private $token = 'vendidero-api';
     private $api_url = 'https://vendidero.de/vd-api/';
