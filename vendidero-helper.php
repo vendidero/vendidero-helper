@@ -3,7 +3,7 @@
 Plugin Name: Vendidero Helper
 Plugin URI: http://vendidero.de
 Description: Will help vendidero users manage their licenses and receive automatic update notifications
-Version: 1.0.1
+Version: 1.0.0
 Author: Vendidero
 Author URI: http://vendidero.de
 License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
