@@ -2,7 +2,7 @@
 /*
 Plugin Name: Vendidero Helper
 Plugin URI: http://vendidero.de
-Description: Will help vendidero users manage their licenses and receive automatic update notifications
+Description: Will help vendidero users to manage their licenses and receive automatic updates
 Version: 1.0.0
 Author: Vendidero
 Author URI: http://vendidero.de
