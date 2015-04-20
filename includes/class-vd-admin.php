@@ -22,9 +22,9 @@ class VD_Admin {
 		?><div class="vd-wrapper">
 			<div class="wrap about-wrap vendidero-wrap">
 				<div class="col-wrap">
-					<h1><?php _e( 'Welcome to Vendidero', 'vendidero' ); ?></h1>
+					<h1><?php _e( 'Welcome to Vendidero', 'vendidero-helper' ); ?></h1>
 					<div class="about-text vendidero-updater-about-text">
-						<?php _e( 'Easily manage your licenses for Vendidero Products and enjoy automatic updates.', 'vendidero' ); ?>
+						<?php _e( 'Easily manage your licenses for Vendidero Products and enjoy automatic updates.', 'vendidero-helper' ); ?>
 					</div>
 					<?php do_action( 'vd_admin_notices' ); ?>
 				</div>

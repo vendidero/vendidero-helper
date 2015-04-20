@@ -18,7 +18,7 @@ $products = get_option( 'vendidero_notice_expire' );
 	</p>
 	<?php foreach( $products as $key => $val ) : $product = VD()->products[ $key ]; ?>
 		<p><strong><?php echo $product->Name; ?></strong></p>
-		<a class="button button-primary" href="<?php echo $product->get_url();?>" target="_blank"><?php _e( 'renew now', 'vendidero-helper' );?></a>
+		<a class="button button-primary" href="<?php echo $product->get_renewal_url();?>" target="_blank"><?php _e( 'renew now', 'vendidero-helper' );?></a>
 	<?php endforeach; ?>
 	<p class="alignleft wc-gzd-button-wrapper">
 	</p>

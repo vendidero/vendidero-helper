@@ -60,13 +60,13 @@ final class Vendidero_Helper {
             $this->init();
 
         add_action( 'vendidero_cron', array( $this, 'expire_cron' ), 0 );
-        // add_action( 'init', array( $this, 'expire_cron' ) );
+        //add_action( 'init', array( $this, 'expire_cron' ) );
     }
 
     public function set_weekly_schedule( $schedules ) {
         $schedules[ 'weekly' ] = array(
             'interval' => 604800,
-            'display'  => __( 'Once per week', 'vendidero' ),
+            'display'  => __( 'Once per week', 'vendidero-helper' ),
         );
         return $schedules;
     }
