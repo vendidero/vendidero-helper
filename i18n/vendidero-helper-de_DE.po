@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Vendidero Helper v1.0.1\n"
+"Project-Id-Version: Vendidero Helper v1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2015-04-20 11:49:37+0000\n"
+"PO-Revision-Date: 2015-04-28 15:25:18+0000\n"
 "Last-Translator: admin <dennis.nissle@iwebix.de>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -20,44 +20,44 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Textdomain-Support: yes"
 
-#: includes/class-vd-admin-license-table.php:28
+#: includes/class-vd-admin-license-table.php:31
 #@ vendidero-helper
 msgid "No Vendidero products found."
 msgstr "Keine Vendidero Produkte gefunden."
 
-#: includes/class-vd-admin-license-table.php:48
+#: includes/class-vd-admin-license-table.php:51
 #@ vendidero-helper
 msgid "Product"
 msgstr "Produkt"
 
-#: includes/class-vd-admin-license-table.php:49
+#: includes/class-vd-admin-license-table.php:52
 #@ vendidero-helper
 msgid "Version"
 msgstr "Version"
 
-#: includes/class-vd-admin-license-table.php:50
+#: includes/class-vd-admin-license-table.php:53
 #@ vendidero-helper
 msgid "Update & Support"
 msgstr "Update & Support"
 
-#: includes/class-vd-admin-license-table.php:51
+#: includes/class-vd-admin-license-table.php:54
 #@ vendidero-helper
 msgid "License Key"
 msgstr "Lizenzschlüssel"
 
-#: includes/class-vd-admin-license-table.php:63
+#: includes/class-vd-admin-license-table.php:66
 #: screens/screen-notice-expire.php:21
 #@ vendidero
 #@ vendidero-helper
 msgid "renew now"
 msgstr "jetzt verlängern"
 
-#: includes/class-vd-admin-license-table.php:77
+#: includes/class-vd-admin-license-table.php:80
 #@ vendidero-helper
 msgid "Unregister"
 msgstr "deaktivieren"
 
-#: includes/class-vd-admin-license-table.php:79
+#: includes/class-vd-admin-license-table.php:82
 #, php-format
 #@ vendidero-helper
 msgid "Place %s license key here"
@@ -75,15 +75,15 @@ msgstr "Verwalte deine Vendidero Lizenzen und profitiere von automatischen Updat
 
 #: includes/class-vd-admin.php:64
 #, php-format
-#@ vendidero
+#@ vendidero-helper
 msgid "Sorry, but could not register %s"
-msgstr ""
+msgstr "Sorry, %s konnte leider nicht registriert werden. Bitte überprüfe deinen Lizenzcode."
 
 #: includes/class-vd-admin.php:77
 #, php-format
-#@ vendidero
+#@ vendidero-helper
 msgid "Sorry, there was an error while unregistering %s"
-msgstr ""
+msgstr "Sorry, leider gab es beim deaktivieren der Lizenz von %s ein Problem."
 
 #: includes/class-vd-request.php:22
 #@ vendidero

@@ -61,7 +61,7 @@ class VD_Admin {
 				if ( empty( $key ) )
 					continue;
 				if ( ! VD()->api->register( $products[ $file ], $key ) )
-					array_push( $errors, sprintf( __( "Sorry, but could not register %s", "vendidero" ), $products[ $file ]->Name ) );
+					array_push( $errors, sprintf( __( "Sorry, but could not register %s", "vendidero-helper" ), $products[ $file ]->Name ) );
 			}
 		}
 		if ( ! empty( $errors ) )
@@ -74,7 +74,7 @@ class VD_Admin {
 		$file = $_GET[ 'filepath' ];
 		if ( isset( $products[ $file ] ) ) {
 			if ( ! VD()->api->unregister( $products[ $file ] ) )
-				array_push( $errors, sprintf( __( "Sorry, there was an error while unregistering %s", "vendidero" ), $products[ $file ]->Name ) );
+				array_push( $errors, sprintf( __( "Sorry, there was an error while unregistering %s", "vendidero-helper" ), $products[ $file ]->Name ) );
 		}
 		if ( ! empty( $errors ) )
 			$this->add_notice( $errors, 'error' );

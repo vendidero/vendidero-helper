@@ -8,6 +8,9 @@ if( ! class_exists( 'WP_List_Table' ) )
 class VD_Admin_License_Table extends WP_List_Table {
 	
 	public $per_page = 30;
+	public $data = array();
+	public $items = array();
+	public $found_data = array();
 	
 	/**
 	 * Constructor.
