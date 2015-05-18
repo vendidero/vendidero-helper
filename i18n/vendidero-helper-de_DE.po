@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Vendidero Helper v1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2015-05-04 08:00:00+0000\n"
+"PO-Revision-Date: 2015-05-18 11:47:40+0000\n"
 "Last-Translator: admin <dennis.nissle@iwebix.de>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -73,12 +73,6 @@ msgstr "Willkommen bei Vendidero"
 msgid "Easily manage your licenses for Vendidero Products and enjoy automatic updates."
 msgstr "Verwalte deine Vendidero Lizenzen und profitiere von automatischen Updates."
 
-#: includes/class-vd-admin.php:64
-#, php-format
-#@ vendidero-helper
-msgid "Sorry, but could not register %s"
-msgstr "Sorry, %s konnte leider nicht registriert werden. Bitte überprüfe deinen Lizenzcode."
-
 #: includes/class-vd-admin.php:77
 #, php-format
 #@ vendidero-helper
@@ -124,4 +118,10 @@ msgstr "Hoppala, es scheint als sei die API gerade unerreichbar"
 #@ vendidero-helper
 msgid "Sorry but currently we are not able to establish a connection to vendidero.de - please be patient and try again in a few minutes."
 msgstr "Sorry, leider kann aktuell keine Verbindung zu vendidero.de aufgebaut werden - bitte habe etwas Geduld und versuche es in ein paar Minuten erneut."
+
+#: includes/class-vd-admin.php:64
+#, php-format
+#@ vendidero-helper
+msgid "Sorry, but could not register %s. Please register your domain within your <a href='%s' target='_blank'>Customer Account</a>."
+msgstr "Sorry, %s konnte nicht registriert werden. Bitte aktiviere deine Domain vorab im <a href='%s' target='_blank'>Kundenbereich</a>."
 

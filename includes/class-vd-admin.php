@@ -61,7 +61,7 @@ class VD_Admin {
 				if ( empty( $key ) )
 					continue;
 				if ( ! VD()->api->register( $products[ $file ], $key ) )
-					array_push( $errors, sprintf( __( "Sorry, but could not register %s", "vendidero-helper" ), $products[ $file ]->Name ) );
+					array_push( $errors, sprintf( __( "Sorry, but could not register %s. Please register your domain within your <a href='%s' target='_blank'>Customer Account</a>.", "vendidero-helper" ), $products[ $file ]->Name, 'https://vendidero.de/mein-konto/lizenzen' ) );
 			}
 		}
 		if ( ! empty( $errors ) )
