@@ -58,7 +58,7 @@ class VD_Admin {
 		$products = VD()->get_products();
 		if ( isset( $_POST[ 'license_keys' ] ) && 0 < count( $_POST[ 'license_keys' ] ) ) {
 			foreach ( $_POST[ 'license_keys' ] as $file => $key ) {
-				if ( empty( $key ) )
+				if ( empty( $key ) || $products[ $file ]->is_registered() )
 					continue;
 				if ( ! VD()->api->register( $products[ $file ], $key ) )
 					array_push( $errors, sprintf( __( "Sorry, but could not register %s. Please register your domain within your <a href='%s' target='_blank'>Customer Account</a>.", "vendidero-helper" ), $products[ $file ]->Name, 'https://vendidero.de/mein-konto/lizenzen' ) );
