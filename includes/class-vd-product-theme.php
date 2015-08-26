@@ -7,16 +7,29 @@ class VD_Product_Theme extends VD_Product {
 		$this->theme = true;
 	}
 
-	public function set_meta() {
-		$this->meta = VD()->themes[ $this->file ];
-	}
-
 	public function __get( $key ) {
-		return ( $this->meta->__get( $key ) ? $this->meta->__get( $key ) : false );
+
+		$value = parent::__get( $key );
+
+		if ( $this->meta->get( $key ) )
+			$value = $this->meta->get( $key );
+
+		return $value;
 	}
 
 	public function __isset( $key ) {
-		return ( $this->meta->__get( $key ) ? true : false );
+		
+		$is = parent::__isset( $key );
+
+		if ( $this->meta->get( $key ) )
+			$is = true;
+
+		return $is;
+
+	}
+
+	public function set_meta() {
+		$this->meta = VD()->themes[ $this->file ];
 	}
 
 	public function get_url() {

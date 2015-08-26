@@ -50,7 +50,7 @@ class VD_Product {
 	}
 
 	public function get_renewal_url() {
-		return $this->get_url() . '?renew=true&license=' . md5( $this->key );
+		return $this->get_url() . '?renew=true&license=' . $this->key;
 	}
 
 	public function is_registered() {

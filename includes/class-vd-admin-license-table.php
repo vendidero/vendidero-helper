@@ -63,7 +63,7 @@ class VD_Admin_License_Table extends WP_List_Table {
 	public function column_product_expires ( $item ) {
 		if ( $item->get_expiration_date() ) {
 			if ( $item->has_expired() )
-				return '<a href="' . $item->get_url() . '" class="button-secondary" target="_blank">' . __( 'renew now', 'vendidero' ) . '</a>';
+				return '<a href="' . $item->get_renewal_url() . '" class="button-secondary" target="_blank">' . __( 'renew now', 'vendidero-helper' ) . '</a>';
 			return $item->get_expiration_date();
 		}
 		return '-';
