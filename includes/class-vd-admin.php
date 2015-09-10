@@ -16,6 +16,28 @@ class VD_Admin {
 		add_action( 'load-' . $hook, array( $this, 'process' ) );
 		add_action( 'admin_print_styles-' . $hook, array( $this, 'enqueue_styles' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'admin_notices', array( $this, 'product_registered' ) );
+	}
+
+	public function product_registered() {
+
+		$screen = get_current_screen();
+
+		if ( 'dashboard_page_vendidero' === $screen->id )
+			return;
+
+		foreach ( VD()->get_products( false ) as $product ) {
+
+			if ( ! $product->is_registered() ) {
+				?>
+				<div class="error">
+			        <p><?php printf( __( 'Your %s license doesn\'t seem to be registered or your Update Flatrate has expired <a style="margin-left: 1em" href="%s" class="button button-secondary">Manage your licenses</a>', 'vendidero-helper' ), $product->Name, admin_url( 'index.php?page=vendidero' ) ); ?></p>
+			    </div>
+				<?php
+			}
+
+		}
+
 	}
 
 	public function screen() {

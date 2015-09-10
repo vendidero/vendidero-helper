@@ -1,12 +1,16 @@
 <?php
 /*
-Plugin Name: Vendidero Helper
-Plugin URI: http://vendidero.de
-Description: Will help vendidero users to manage their licenses and receive automatic updates
-Version: 1.0.3
-Author: Vendidero
-Author URI: http://vendidero.de
-License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * Plugin Name: Vendidero Helper
+ * Plugin URI: http://vendidero.de
+ * Description: Will help vendidero users to manage their licenses and receive automatic updates
+ * Version: 1.0.3
+ * Author: Vendidero
+ * Author URI: http://vendidero.de
+ * License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ *
+ * Text Domain: vendidero-helper
+ * Domain Path: /i18n/
+ *
 */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly

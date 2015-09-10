@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Vendidero Helper v1.0.0\n"
+"Project-Id-Version: Vendidero Helper v1.0.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2015-05-18 11:47:40+0000\n"
+"PO-Revision-Date: 2015-09-10 15:12:37+0000\n"
 "Last-Translator: admin <dennis.nissle@iwebix.de>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -47,7 +47,6 @@ msgstr "Lizenzschlüssel"
 
 #: includes/class-vd-admin-license-table.php:66
 #: screens/screen-notice-expire.php:21
-#@ vendidero
 #@ vendidero-helper
 msgid "renew now"
 msgstr "jetzt verlängern"
@@ -63,17 +62,17 @@ msgstr "deaktivieren"
 msgid "Place %s license key here"
 msgstr "Lizenzschlüssel von %s einfügen"
 
-#: includes/class-vd-admin.php:25
+#: includes/class-vd-admin.php:47
 #@ vendidero-helper
 msgid "Welcome to Vendidero"
 msgstr "Willkommen bei Vendidero"
 
-#: includes/class-vd-admin.php:27
+#: includes/class-vd-admin.php:49
 #@ vendidero-helper
 msgid "Easily manage your licenses for Vendidero Products and enjoy automatic updates."
 msgstr "Verwalte deine Vendidero Lizenzen und profitiere von automatischen Updates."
 
-#: includes/class-vd-admin.php:77
+#: includes/class-vd-admin.php:99
 #, php-format
 #@ vendidero-helper
 msgid "Sorry, there was an error while unregistering %s"
@@ -104,7 +103,7 @@ msgstr "Es scheint so als würde die Update & Support Flatrate für eines einer 
 msgid "Hide this notice"
 msgstr "Nachricht ausblenden"
 
-#: vendidero-helper.php:69
+#: vendidero-helper.php:73
 #@ vendidero-helper
 msgid "Once per week"
 msgstr "Einmal pro Woche"
@@ -119,9 +118,46 @@ msgstr "Hoppala, es scheint als sei die API gerade unerreichbar"
 msgid "Sorry but currently we are not able to establish a connection to vendidero.de - please be patient and try again in a few minutes."
 msgstr "Sorry, leider kann aktuell keine Verbindung zu vendidero.de aufgebaut werden - bitte habe etwas Geduld und versuche es in ein paar Minuten erneut."
 
-#: includes/class-vd-admin.php:64
+#: includes/class-vd-admin.php:86
 #, php-format
 #@ vendidero-helper
 msgid "Sorry, but could not register %s. Please register your domain within your <a href='%s' target='_blank'>Customer Account</a>."
 msgstr "Sorry, %s konnte nicht registriert werden. Bitte aktiviere deine Domain vorab im <a href='%s' target='_blank'>Kundenbereich</a>."
+
+#: includes/class-vd-admin.php:34
+#, php-format
+#@ vendidero-helper
+msgid "Your %s license doesn't seem to be registered or your Update Flatrate has expired <a style=\"margin-left: 1em\" href=\"%s\" class=\"button button-secondary\">Manage your licenses</a>"
+msgstr "Deine %s Lizenz scheint nicht registriert oder deine Update Flatrate ausgelaufen zu sein <a style=\"margin-left: 1em\" href=\"%s\" class=\"button button-secondary\">Lizenzen verwalten</a>"
+
+#. translators: plugin header field 'Name'
+#: vendidero-helper.php:0
+#@ vendidero-helper
+msgid "Vendidero Helper"
+msgstr "Vendidero Helper"
+
+#. translators: plugin header field 'PluginURI'
+#. translators: plugin header field 'AuthorURI'
+#: vendidero-helper.php:0
+#@ vendidero-helper
+msgid "http://vendidero.de"
+msgstr "https://vendidero.de"
+
+#. translators: plugin header field 'Description'
+#: vendidero-helper.php:0
+#@ vendidero-helper
+msgid "Will help vendidero users to manage their licenses and receive automatic updates"
+msgstr "Hilft dir dabei deine Vendidero Lizenzen zu verwalten und automatische Updates zu erhalten"
+
+#. translators: plugin header field 'Author'
+#: vendidero-helper.php:0
+#@ vendidero-helper
+msgid "Vendidero"
+msgstr "Vendidero"
+
+#. translators: plugin header field 'Version'
+#: vendidero-helper.php:0
+#@ vendidero-helper
+msgid "1.0.3"
+msgstr "1.0.3"
 
