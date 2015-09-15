@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Vendidero Helper v1.0.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2015-09-10 15:12:37+0000\n"
+"PO-Revision-Date: 2015-09-15 11:00:24+0000\n"
 "Last-Translator: admin <dennis.nissle@iwebix.de>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -62,17 +62,17 @@ msgstr "deaktivieren"
 msgid "Place %s license key here"
 msgstr "Lizenzschlüssel von %s einfügen"
 
-#: includes/class-vd-admin.php:47
+#: includes/class-vd-admin.php:59
 #@ vendidero-helper
 msgid "Welcome to Vendidero"
 msgstr "Willkommen bei Vendidero"
 
-#: includes/class-vd-admin.php:49
+#: includes/class-vd-admin.php:61
 #@ vendidero-helper
 msgid "Easily manage your licenses for Vendidero Products and enjoy automatic updates."
 msgstr "Verwalte deine Vendidero Lizenzen und profitiere von automatischen Updates."
 
-#: includes/class-vd-admin.php:99
+#: includes/class-vd-admin.php:111
 #, php-format
 #@ vendidero-helper
 msgid "Sorry, there was an error while unregistering %s"
@@ -118,13 +118,13 @@ msgstr "Hoppala, es scheint als sei die API gerade unerreichbar"
 msgid "Sorry but currently we are not able to establish a connection to vendidero.de - please be patient and try again in a few minutes."
 msgstr "Sorry, leider kann aktuell keine Verbindung zu vendidero.de aufgebaut werden - bitte habe etwas Geduld und versuche es in ein paar Minuten erneut."
 
-#: includes/class-vd-admin.php:86
+#: includes/class-vd-admin.php:98
 #, php-format
 #@ vendidero-helper
 msgid "Sorry, but could not register %s. Please register your domain within your <a href='%s' target='_blank'>Customer Account</a>."
 msgstr "Sorry, %s konnte nicht registriert werden. Bitte aktiviere deine Domain vorab im <a href='%s' target='_blank'>Kundenbereich</a>."
 
-#: includes/class-vd-admin.php:34
+#: includes/class-vd-admin.php:46
 #, php-format
 #@ vendidero-helper
 msgid "Your %s license doesn't seem to be registered or your Update Flatrate has expired <a style=\"margin-left: 1em\" href=\"%s\" class=\"button button-secondary\">Manage your licenses</a>"
@@ -160,4 +160,9 @@ msgstr "Vendidero"
 #@ vendidero-helper
 msgid "1.0.3"
 msgstr "1.0.3"
+
+#: screens/screen-manage-licenses.php:21
+#@ vendidero-helper
+msgid "Refresh license statuses"
+msgstr "Lizenzdaten aktualisieren"
 

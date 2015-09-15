@@ -3,7 +3,7 @@
  * Plugin Name: Vendidero Helper
  * Plugin URI: http://vendidero.de
  * Description: Will help vendidero users to manage their licenses and receive automatic updates
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: Vendidero
  * Author URI: http://vendidero.de
  * License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -24,7 +24,7 @@ final class Vendidero_Helper {
      */
     protected static $_instance = null;
 
-    public $version = '1.0.3';
+    public $version = '1.0.4';
 
     private $token = 'vendidero-api';
     private $api_url = 'https://vendidero.de/vd-api/';
@@ -98,9 +98,9 @@ final class Vendidero_Helper {
             foreach ( $this->products as $key => $product ) {
                 if ( ! $product->is_registered() )
                     continue;
-                $expire = VD()->api->expiration_check( $product );
-                if ( $expire )
-                    $product->set_expiration_date( $expire );
+                // Refresh expiration date
+                $product->refresh_expiration_date();
+                
                 if ( $expire = $product->get_expiration_date( false ) ) {
                     $diff = VD()->get_date_diff( date( 'Y-m-d' ), $expire );
                     $notice = get_option( 'vendidero_notice_expire', array() );
@@ -177,10 +177,12 @@ final class Vendidero_Helper {
 
     public function register_products() {
         $products = apply_filters( 'vendidero_updateable_products', array() );
-        if ( ! empty( $products ) && is_array( $products ) )
-            foreach ( $products as $plugin )
+        if ( ! empty( $products ) && is_array( $products ) ) {
+            foreach ( $products as $plugin ) {
                 if ( is_object( $plugin ) && ! empty( $plugin->file ) && ! empty( $plugin->product_id ) )
                     $this->add_product( $plugin->file, $plugin->product_id );
+            }
+        }
         // Self update
         $this->add_product( 'vendidero-helper/vendidero-helper.php', 2198, true );
     }
@@ -195,8 +197,17 @@ final class Vendidero_Helper {
     }
 
     public function add_product( $file, $product_id, $free = false ) {
-        if ( $file != '' && ! isset( $this->products[ $file ] ) )
-            $this->products[ $file ] = ( strpos( $file, 'style.css' ) ? new VD_Product_Theme( $file, $product_id, $free ) : new VD_Product( $file, $product_id, $free ) );
+        if ( $file != '' && ! isset( $this->products[ $file ] ) ) {
+            $is_theme = ( strpos( $file, 'style.css' ) ? true : false );
+
+            // Check if is right file dir
+            if ( $is_theme && ! isset( $this->themes[ $file ] ) )
+                return false;
+            else if ( ! $is_theme && ! isset( $this->plugins[ $file ] ) )
+                return false;
+
+            $this->products[ $file ] = ( $is_theme ? new VD_Product_Theme( $file, $product_id, $free ) : new VD_Product( $file, $product_id, $free ) );
+        }
     }
 
     public function remove_product( $file ) {

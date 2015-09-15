@@ -17,6 +17,18 @@ class VD_Admin {
 		add_action( 'admin_print_styles-' . $hook, array( $this, 'enqueue_styles' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_notices', array( $this, 'product_registered' ) );
+		add_action( 'load-' . $hook, array( $this, 'license_refresh' ) );
+	}
+
+	public function license_refresh() {
+		$action = $this->get_action( array( 'vd_refresh' ) );
+		if ( $action && wp_verify_nonce( ( isset( $_GET[ '_wpnonce' ] ) ? $_GET[ '_wpnonce' ] : '' ), 'refresh_licenses' ) ) {
+			$products = VD()->get_products( false );
+			if ( ! empty( $products ) ) {
+				foreach ( $products as $product )
+					$product->refresh_expiration_date();
+			}
+		}
 	}
 
 	public function product_registered() {

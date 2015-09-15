@@ -57,6 +57,14 @@ class VD_Product {
 		return ( ( ! empty( $this->key ) || $this->is_free() ) ? true : false );
 	}
 
+	public function refresh_expiration_date() {
+		if ( $this->is_registered() ) {
+			$expire = VD()->api->expiration_check( $this );
+			if ( $expire )
+                $this->set_expiration_date( $expire );
+		}
+	}
+
 	public function get_expiration_date( $format = 'd.m.Y' ) {
 		if ( ! $this->is_registered() || empty( $this->expires ) )
 			return false;
@@ -92,13 +100,23 @@ class VD_Product {
 	}
 
 	public function unregister() {
+		
 		$registered = get_option( 'vendidero_registered', array() );
+		
 		if ( isset( $registered[ $this->file ] ) ) {
 			unset( $registered[ $this->file ] );
 			$this->key = '';
 			$this->expires = '';
 		}
-		update_option( 'vendidero_registered', array_values( $registered ) );
+
+		if ( ! empty( $registered ) ) {
+			foreach( $registered as $key => $val ) {
+				if ( is_numeric( $key ) )
+					unset( $registered[ $key ] );
+			}
+		}
+
+		update_option( 'vendidero_registered', array_filter( $registered ) );
 	}
 
 	public function get_key() {

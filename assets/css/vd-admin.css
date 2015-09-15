@@ -1,3 +1,14 @@
 .vd-wrapper .vendidero-wrap .updated, .vd-wrapper .vendidero-wrap .error {
 	display: block !important;
 }
+
+.dashboard_page_vendidero .about-wrap p.submit {
+	float: left;
+} 
+
+.dashboard_page_vendidero .about-wrap .refresh {
+	margin-left: 1em;
+	font-size: 12px;
+	line-height: 27px;
+	text-decoration: none;
+} 

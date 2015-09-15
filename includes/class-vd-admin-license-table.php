@@ -57,7 +57,7 @@ class VD_Admin_License_Table extends WP_List_Table {
     }
 
 	public function column_product_name ( $item ) {
-		return wpautop( '<strong>' . $item->Name . '</strong>' );
+		return wpautop( '<strong title="' . $item->file . '">' . $item->Name . '</strong>' );
 	}
 
 	public function column_product_expires ( $item ) {
