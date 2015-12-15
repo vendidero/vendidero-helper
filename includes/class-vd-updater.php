@@ -7,7 +7,6 @@ class VD_Updater {
 
 	public function __construct( VD_Product $product ) {
 		$this->product = $product;
-		delete_transient( 'update_plugins' );
 		// Check For Updates
 		add_filter( 'pre_set_site_transient_update_' . ( $this->product->is_theme() ? 'themes' : 'plugins' ), array( $this, 'update_check' ) );
 		add_action( 'http_request_args', array( $this, 'ssl_verify' ), 10, 2 );

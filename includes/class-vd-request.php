@@ -18,7 +18,7 @@ class VD_Request {
 			);
 		}
 		$this->args[ 'home_url' ] = esc_url( home_url( '/' ) );
-		if ( ! in_array( $type, array( 'update_check', 'update', 'ping', 'register', 'unregister', 'expiration_check', 'license_check', 'generator_version_check', 'generator_check', 'generator_result_check' ) ) )
+		if ( ! in_array( $type, array( 'update_check', 'update', 'ping', 'register', 'unregister', 'expiration_check', 'license_check', 'generator_version_check', 'generator_check', 'generator_result_check', 'info' ) ) )
 			return new WP_Error( __( 'Request method not supported', 'vendidero' ) );
 		$this->args = array_merge( $this->args, $args );
 		$this->args[ 'request' ] = $type;

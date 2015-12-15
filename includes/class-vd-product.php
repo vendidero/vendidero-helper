@@ -4,6 +4,7 @@ class VD_Product {
 
 	public $file;
 	public $id;
+	public $slug;
 	public $free = false;
 	public $theme = false;
 	private $key;
@@ -18,6 +19,7 @@ class VD_Product {
 		$this->key = '';
 		$this->expires = '';
 		$this->set_meta();
+		$this->slug = sanitize_title( $this->Name );
 		$registered = get_option( 'vendidero_registered', array() );
 		if ( isset( $registered[ $this->file ] ) ) {
 			$this->key = $registered[ $this->file ]["key"];

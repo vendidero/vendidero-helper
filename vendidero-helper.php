@@ -3,7 +3,7 @@
  * Plugin Name: Vendidero Helper
  * Plugin URI: http://vendidero.de
  * Description: Will help vendidero users to manage their licenses and receive automatic updates
- * Version: 1.0.4
+ * Version: 1.1.0
  * Author: Vendidero
  * Author URI: http://vendidero.de
  * License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -24,7 +24,7 @@ final class Vendidero_Helper {
      */
     protected static $_instance = null;
 
-    public $version = '1.0.4';
+    public $version = '1.1.0';
 
     private $token = 'vendidero-api';
     private $api_url = 'https://vendidero.de/vd-api/';
@@ -64,7 +64,6 @@ final class Vendidero_Helper {
             $this->init();
 
         add_action( 'vendidero_cron', array( $this, 'expire_cron' ), 0 );
-        //add_action( 'init', array( $this, 'expire_cron' ) );
     }
 
     public function set_weekly_schedule( $schedules ) {
@@ -125,14 +124,20 @@ final class Vendidero_Helper {
     }
 
     public function set_data() {
+        
         if ( ! function_exists( 'get_plugins' ) )
             require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        
         $this->plugins = get_plugins();
+        
         $themes = wp_get_themes();
+        
         if ( ! empty( $themes ) ) {
+        
             foreach ( $themes as $theme )
                 $this->themes[ basename( $theme->__get( 'stylesheet_dir' ) ) . '/style.css' ] = $theme;
         }
+        
     }
 
     public function install() {

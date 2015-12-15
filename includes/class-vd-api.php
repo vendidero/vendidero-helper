@@ -25,6 +25,11 @@ class VD_API {
 		return ( ! $request->is_error() ? true : false );
 	}
 
+	public function info( VD_Product $product ) {
+		$request = new VD_Request( 'info', $product );
+		return ( ! $request->is_error() ? $request->get_response() : false );
+	}
+
 	public function expiration_check( VD_Product $product ) {
 		$request = new VD_Request( 'expiration_check', $product );
 		return ( ! $request->is_error() ? $request->get_response( "expiration_date" ) : false );

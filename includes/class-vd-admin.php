@@ -9,6 +9,47 @@ class VD_Admin {
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'vd_process_register', array( $this, 'process_register' ) );
 		add_action( 'vd_process_unregister', array( $this, 'process_unregister' ) );
+		add_filter( 'plugins_api', array( $this, 'plugins_api_filter' ), 10, 3 );
+	}
+
+	public function plugins_api_filter( $result, $action, $args ) {
+
+		$products = VD()->get_products();
+		$product = false;
+
+		foreach ( $products as $product_item ) {
+			
+			if ( ! $product_item->is_theme() && $args->slug === $product_item->slug )
+				$product = $product_item;
+
+		}
+
+		if ( ! $product )
+			return $result;
+
+		$result = array(
+			'name' 				=> $product->Name,
+			'slug' 				=> $product->slug,
+			'author' 			=> $product->Author,
+			'author_profile' 	=> $product->AuthorURI,
+			'version' 			=> $product->Version,
+			'homepage' 			=> $product->PluginURI,
+			'sections' 			=> array(
+				'description' 	=> '',
+				'changelog'		=> '',
+			),
+		);
+
+		$api_result = VD()->api->info( $product );
+
+		if ( $api_result )
+			$result = array_merge( $result, json_decode( json_encode( $api_result ), true ) );
+
+		if ( ! isset( $result[ 'sections' ][ 'description' ] ) )
+			$result[ 'sections' ][ 'description' ] = $product->Description;
+
+		return (object) $result;
+
 	}
 
 	public function add_menu() {
