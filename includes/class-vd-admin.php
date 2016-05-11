@@ -17,8 +17,11 @@ class VD_Admin {
 		$products = VD()->get_products();
 		$product = false;
 
+		if ( ! isset( $args->slug ) )
+			return $result;
+
 		foreach ( $products as $product_item ) {
-			
+
 			if ( ! $product_item->is_theme() && $args->slug === $product_item->slug )
 				$product = $product_item;
 

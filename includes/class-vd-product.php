@@ -25,7 +25,7 @@ class VD_Product {
 			$this->key = $registered[ $this->file ]["key"];
 			$this->expires = $registered[ $this->file ]["expires"];
 		}
-	}	
+	}
 
 	public function set_meta() {
 		$this->meta = VD()->plugins[$this->file];
