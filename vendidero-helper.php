@@ -3,14 +3,13 @@
  * Plugin Name: Vendidero Helper
  * Plugin URI: http://vendidero.de
  * Description: Will help vendidero users to manage their licenses and receive automatic updates
- * Version: 1.1.1
+ * Version: 1.1.3
  * Author: Vendidero
  * Author URI: http://vendidero.de
  * License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  *
  * Text Domain: vendidero-helper
  * Domain Path: /i18n/
- *
 */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
@@ -24,7 +23,7 @@ final class Vendidero_Helper {
      */
     protected static $_instance = null;
 
-    public $version = '1.1.1';
+    public $version = '1.1.3';
 
     private $token = 'vendidero-api';
     private $api_url = 'https://vendidero.de/vd-api/';
@@ -75,9 +74,12 @@ final class Vendidero_Helper {
     }
 
     public function init() {
+        
         // Hook
         $this->api = new VD_API();
+        
         $this->includes();
+        
         add_action( 'admin_init', array( $this, 'load' ), 0 );
         add_action( 'admin_init', array( $this, 'check_notice_hide' ) );
         add_action( 'admin_notices', array( $this, 'expire_notice' ), 0 );
@@ -167,9 +169,12 @@ final class Vendidero_Helper {
      * @return void
      */
     public function autoload( $class ) {
+        
         $path = $this->plugin_path() . '/includes/';
         $class = strtolower( $class );
+        
         $file = 'class-' . str_replace( '_', '-', $class ) . '.php';
+        
         if ( $path && is_readable( $path . $file ) ) {
             include_once( $path . $file );
             return;

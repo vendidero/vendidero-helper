@@ -18,8 +18,6 @@
 			
 			?>
 
-			<a class="refresh" href="<?php echo wp_nonce_url( add_query_arg( array( 'action' => 'vd_refresh' ), admin_url( 'index.php?page=vendidero' ) ), 'refresh_licenses' ); ?>"><?php _e( 'Refresh license statuses', 'vendidero-helper' ); ?></a>
-
 			<?php wp_nonce_field( 'bulk_licenses' ); ?>
 
 		</form>

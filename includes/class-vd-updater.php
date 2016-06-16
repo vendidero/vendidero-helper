@@ -4,6 +4,8 @@ class VD_Updater {
 
 	public $product;
 	public $notices = array();
+	public $upgrade_notices = array();
+	public $added_upgrade_notice = false;
 
 	public function __construct( VD_Product $product ) {
 		
@@ -15,34 +17,53 @@ class VD_Updater {
 	}
 
 	public function ssl_verify( $args, $url ) {
+		
 		if ( strpos( $url, 'https://vendidero.de' ) !== false )
 			$args[ 'sslverify' ] = false;
+		
 		return $args; 
 	}
 
 	public function update_check( $transient ) {
+		
 		$request = VD()->api->update_check( $this->product, $this->product->get_key() );
-		if ( $request->is_error() )
+		
+		if ( $request->is_error() ) {
+		
 			$this->add_notice( $request->get_response() );
-		else {
+		
+		} else {
+		
 			if ( $request->get_response( "notice" ) )
 				$this->add_notice( (array) $request->get_response( "notice" ), 'error' );
+			
 			if ( $request->get_response( "payload" ) ) {
+				
 				$payload = $request->get_response( "payload" );
+				
 				// Do only add transient if remote version is newer than local version
 				if ( version_compare( $payload->new_version, $this->product->Version, "<=" ) )
 					return $transient;
+				
 				// Set plugin/theme file (seems to be necessary as for 4.2)
 				if ( ! $this->product->is_theme() ) {
+				
 					$payload->plugin = $this->product->file;
 					$payload->slug = sanitize_title( $this->product->Name );
+					$payload->vd_expire_notice = sprintf( __( 'There is a new Version of %s but your Update Flatrate seems to have expired. Please <a href="%s" target="_blank">renew your Update Flatrate</a> first.', 'vendidero-helper' ), $this->product->Name,  $this->product->get_renewal_url() );
+
 				} else {
+				
 					$payload = (array) $payload;
 					$payload[ 'theme' ] = $this->product->file;
+					$payload[ 'vd_expire_notice' ] = sprintf( __( 'There is a new Version of %s but your Update Flatrate seems to have expired. Please <a href="%s" target="_blank">renew your Update Flatrate</a> first.', 'vendidero-helper' ), $this->product->Name,  $this->product->get_renewal_url() );
+
 				}
+
 				$transient->response[ ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file ) ] = $payload;
 			}
 		}
+
 	    return $transient;
 	}
 

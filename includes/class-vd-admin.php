@@ -9,7 +9,9 @@ class VD_Admin {
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'vd_process_register', array( $this, 'process_register' ) );
 		add_action( 'vd_process_unregister', array( $this, 'process_unregister' ) );
-		add_filter( 'plugins_api', array( $this, 'plugins_api_filter' ), 10, 3 );
+		add_filter( 'plugins_api', array( $this, 'plugins_api_filter' ), 150, 3 );
+
+		add_action( 'in_admin_header', array( $this, 'set_upgrade_notice' ) );
 	}
 
 	public function plugins_api_filter( $result, $action, $args ) {
@@ -52,13 +54,49 @@ class VD_Admin {
 			$result[ 'sections' ][ 'description' ] = $product->Description;
 
 		return (object) $result;
+	}
 
+	public function set_upgrade_notice() {
+		
+		if ( get_current_screen()->id === 'update-core' ) {
+			
+			$transient = get_site_transient( 'update_plugins' );
+			$transient_themes = get_site_transient( 'update_themes' );
+			$products = VD()->get_products();
+
+			if ( ! empty( $transient ) && isset( $transient->response ) ) {
+			
+				foreach ( $transient->response as $plugin => $data ) {
+					
+					if ( isset( $products[ $plugin ] ) ) {
+						$product = $products[ $plugin ];
+
+						if ( $product->has_expired() && isset( $data->vd_expire_notice ) ) {
+							echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . $data->vd_expire_notice . '</span></div>';
+						}
+					}
+				}
+			}
+
+			if ( ! empty( $transient_themes ) && isset( $transient_themes->response ) ) {
+
+				foreach ( $transient_themes->response as $theme => $data ) {
+
+					if ( isset( $data[ 'theme' ] ) && isset( $products[ $data[ 'theme' ] ] ) ) {
+						$product = $products[ $data[ 'theme' ] ];
+	
+						if ( $product->has_expired() && isset( $data[ 'vd_expire_notice' ] ) ) {
+							echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . $data[ 'vd_expire_notice' ] . '</span></div>';
+						}
+					}
+				}
+			}
+		}
 	}
 
 	public function add_menu() {
 		$hook = add_dashboard_page( 'vendidero', 'Vendidero', 'manage_options', 'vendidero', array( $this, 'screen' ) );
 		add_action( 'load-' . $hook, array( $this, 'process' ) );
-		add_action( 'admin_print_styles-' . $hook, array( $this, 'enqueue_styles' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'admin_notices', array( $this, 'product_registered' ) );
 		add_action( 'load-' . $hook, array( $this, 'license_refresh' ) );
@@ -108,7 +146,18 @@ class VD_Admin {
 				</div>
 			</div>
 		</div>
-		<?php if ( VD()->api->ping() ) : ?>
+		<?php if ( VD()->api->ping() ) :
+
+			// Refresh License Data
+			$products = VD()->get_products( false );
+			
+			if ( ! empty( $products ) ) {
+				
+				foreach ( $products as $product )
+					$product->refresh_expiration_date();
+			}
+
+		?>
 			<?php require_once( VD()->plugin_path() . '/screens/screen-manage-licenses.php' ); ?>
 		<?php else : ?>
 			<?php require_once( VD()->plugin_path() . '/screens/screen-api-unavailable.php' ); ?>
@@ -171,14 +220,14 @@ class VD_Admin {
 		}
 	}
 
-	public function enqueue_styles() {
+	public function enqueue_scripts() {
+
 		wp_register_style( 'vp_admin', VD()->plugin_url() . '/assets/css/vd-admin.css' );
 		wp_enqueue_style( 'vp_admin' );
-	}
 
-	public function enqueue_scripts() {
 		wp_register_script( 'vd_admin_js', VD()->plugin_url() . '/assets/js/vd-admin.js', array( 'jquery' ) );
 		wp_enqueue_script( 'vd_admin_js' );
+
 	}
 
 }

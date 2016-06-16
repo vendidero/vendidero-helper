@@ -11,4 +11,11 @@
 	font-size: 12px;
 	line-height: 27px;
 	text-decoration: none;
-} 
+}
+
+span.vd-inline-upgrade-expire-notice {
+	display: inline-block;
+	margin: 5px 0px !important;
+	border-left: 4px solid #dc3232;
+	padding: 1px 12px !important;
+}
