@@ -9,6 +9,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $dismiss_url = add_query_arg( 'notice', 'vd-hide-notice', add_query_arg( 'nonce', wp_create_nonce( 'vd-hide-notice' ) ) );
 $products = get_option( 'vendidero_notice_expire' );
+$show_notice = false;
+
+foreach ( $products as $key => $val ) {
+	if ( isset( VD()->products[ $key ] ) )
+		$show_notice = true;
+	else
+		unset( $products[ $key ] );
+}
+
+if ( ! $show_notice ) {
+	delete_option( 'vendidero_notice_expire' );
+	return;
+}
+
 ?>
 
 <div class="error fade">
@@ -16,13 +30,7 @@ $products = get_option( 'vendidero_notice_expire' );
 	<p>
 		<?php _e( 'It seems like the Update & Support Flatrate of one of your Vendidero products expires in a few days:', 'vendidero-helper' ); ?>
 	</p>
-	<?php foreach( $products as $key => $val ) :
-
-		if ( ! isset( VD()->products[ $key ] ) )
-			continue;
-
-		$product = VD()->products[ $key ]; 
-		?>
+	<?php foreach( $products as $key => $val ) : $product = VD()->products[ $key ]; ?>
 		<p><strong><?php echo $product->Name; ?></strong></p>
 		<a class="button button-primary" href="<?php echo $product->get_renewal_url();?>" target="_blank"><?php _e( 'renew now', 'vendidero-helper' );?></a>
 	<?php endforeach; ?>
