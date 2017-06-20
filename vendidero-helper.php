@@ -3,7 +3,7 @@
  * Plugin Name: Vendidero Helper
  * Plugin URI: http://vendidero.de
  * Description: Will help vendidero users to manage their licenses and receive automatic updates
- * Version: 1.1.3
+ * Version: 1.1.4
  * Author: Vendidero
  * Author URI: http://vendidero.de
  * License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -23,7 +23,7 @@ final class Vendidero_Helper {
      */
     protected static $_instance = null;
 
-    public $version = '1.1.3';
+    public $version = '1.1.4';
 
     private $token = 'vendidero-api';
     private $api_url = 'https://vendidero.de/vd-api/';
@@ -121,8 +121,32 @@ final class Vendidero_Helper {
     }
 
     public function expire_notice() {
-        if ( get_option( 'vendidero_notice_expire' ) )
-            include_once( 'screens/screen-notice-expire.php' );
+        if ( get_option( 'vendidero_notice_expire' ) ) {
+
+        	// Check whether license has been renewed already
+	        $products = get_option( 'vendidero_notice_expire' );
+	        $new_products = array();
+
+	        foreach ( $products as $key => $val ) {
+		        if ( isset( VD()->products[ $key ] ) ) {
+			        $product = VD()->products[ $key ];
+
+			        if ( $expire = $product->get_expiration_date( false ) ) {
+
+			        	$diff = VD()->get_date_diff( date( 'Y-m-d' ), $expire );
+				        if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff[ 'y' ] ) && empty( $diff[ 'm' ] ) && $diff[ 'd' ] <= 7 ) )
+					        $new_products[ $key ] = true;
+			        }
+		        }
+	        }
+
+	        if ( ! empty( $new_products ) ) {
+		        update_option( 'vendidero_notice_expire', $new_products );
+		        include_once( 'screens/screen-notice-expire.php' );
+	        } else {
+	        	delete_option( 'vendidero_notice_expire' );
+	        }
+        }
     }
 
     public function set_data() {
