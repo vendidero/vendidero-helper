@@ -15,11 +15,15 @@ class VD_Request {
 				'product_file' => $product->file,
 				'product_type' => ( $product->is_theme() ? 'theme' : 'plugin' ),
 				'key' => ( $product->is_registered() ? $product->get_key() : false ),
+				'home_url' => esc_url( $product->get_home_url() ),
 			);
+		} else {
+			$this->args[ 'home_url' ] = esc_url( home_url( '/' ) );
 		}
-		$this->args[ 'home_url' ] = esc_url( home_url( '/' ) );
+
 		if ( ! in_array( $type, array( 'update_check', 'update', 'ping', 'register', 'unregister', 'expiration_check', 'license_check', 'generator_version_check', 'generator_check', 'generator_result_check', 'info' ) ) )
 			return new WP_Error( __( 'Request method not supported', 'vendidero' ) );
+
 		$this->args = array_merge( $this->args, $args );
 		$this->args[ 'request' ] = $type;
 		$this->response = new stdClass();

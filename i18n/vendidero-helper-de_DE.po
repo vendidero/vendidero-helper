@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vendidero Helper v1.0.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-16 11:47+0100\n"
-"PO-Revision-Date: 2016-06-16 11:48+0100\n"
+"POT-Creation-Date: 2017-07-24 13:57+0200\n"
+"PO-Revision-Date: 2017-07-24 13:59+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -11,59 +11,58 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 1.6.4\n"
+"X-Generator: Poedit 2.0.3\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;"
 "_n_noop:1,2;_c,_nc:4c,1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2\n"
-"X-Poedit-Basepath: .\n"
+"X-Poedit-Basepath: ..\n"
 "X-Textdomain-Support: yes\n"
-"X-Poedit-SearchPath-0: /Users/dennis/Documents/localhost/vendidero/wp-"
-"content/plugins/vendidero-helper\n"
+"X-Poedit-SearchPath-0: .\n"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin-license-table.php:31
+#: includes/class-vd-admin-license-table.php:31
 msgid "No Vendidero products found."
 msgstr "Keine Vendidero Produkte gefunden."
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin-license-table.php:51
+#: includes/class-vd-admin-license-table.php:51
 msgid "Product"
 msgstr "Produkt"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin-license-table.php:52
+#: includes/class-vd-admin-license-table.php:52
 msgid "Version"
 msgstr "Version"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin-license-table.php:53
+#: includes/class-vd-admin-license-table.php:53
 msgid "Update & Support"
 msgstr "Update & Support"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin-license-table.php:54
+#: includes/class-vd-admin-license-table.php:54
 msgid "License Key"
 msgstr "Lizenzschlüssel"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin-license-table.php:66
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/screens/screen-notice-expire.php:21
+#: includes/class-vd-admin-license-table.php:66
+#: screens/screen-notice-expire.php:35
 msgid "renew now"
 msgstr "jetzt verlängern"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin-license-table.php:80
+#: includes/class-vd-admin-license-table.php:80
 msgid "Unregister"
 msgstr "deaktivieren"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin-license-table.php:82
+#: includes/class-vd-admin-license-table.php:82
 #, php-format
 msgid "Place %s license key here"
 msgstr "Lizenzschlüssel von %s einfügen"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin.php:89
+#: includes/class-vd-admin.php:128
 #, php-format
 msgid ""
 "Your %s license doesn't seem to be registered or your Update Flatrate has "
@@ -75,20 +74,28 @@ msgstr ""
 "button-secondary\">Lizenzen verwalten</a>"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin.php:102
+#: includes/class-vd-admin.php:141
 msgid "Welcome to Vendidero"
 msgstr "Willkommen bei Vendidero"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin.php:104
+#: includes/class-vd-admin.php:143
 msgid ""
 "Easily manage your licenses for Vendidero Products and enjoy automatic "
 "updates."
 msgstr ""
 "Verwalte deine Vendidero Lizenzen und profitiere von automatischen Updates."
 
+#: includes/class-vd-admin.php:145
+msgid ""
+"You are running a multisite installation. Please make sure to register your "
+"license for every site individually."
+msgstr ""
+"Du nutzt eine Multisite-Installation. Bitte stelle sicher, dass du für jede "
+"Installation deine Lizenz einzeln registrierst."
+
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin.php:152
+#: includes/class-vd-admin.php:194
 #, php-format
 msgid ""
 "Sorry, but could not register %s. Please register your domain within your <a "
@@ -98,17 +105,17 @@ msgstr ""
 "vorab im <a href='%s' target='_blank'>Kundenbereich</a>."
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-admin.php:165
+#: includes/class-vd-admin.php:207
 #, php-format
 msgid "Sorry, there was an error while unregistering %s"
 msgstr "Sorry, leider gab es beim deaktivieren der Lizenz von %s ein Problem."
 
 # @ vendidero
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-request.php:22
+#: includes/class-vd-request.php:25
 msgid "Request method not supported"
 msgstr "Anfrage wird nicht unterstützt"
 
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/includes/class-vd-updater.php:54
+#: includes/class-vd-updater.php:53 includes/class-vd-updater.php:59
 #, php-format
 msgid ""
 "There is a new Version of %s but your Update Flatrate seems to have expired. "
@@ -119,12 +126,12 @@ msgstr ""
 "Flatrate</a> um das Update installieren zu können."
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/screens/screen-api-unavailable.php:7
+#: screens/screen-api-unavailable.php:7
 msgid "Oops, seems like the API needs a break"
 msgstr "Hoppala, es scheint als sei die API gerade unerreichbar"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/screens/screen-api-unavailable.php:8
+#: screens/screen-api-unavailable.php:8
 msgid ""
 "Sorry but currently we are not able to establish a connection to vendidero."
 "de - please be patient and try again in a few minutes."
@@ -133,17 +140,17 @@ msgstr ""
 "- bitte habe etwas Geduld und versuche es in ein paar Minuten erneut."
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/screens/screen-manage-licenses.php:17
+#: screens/screen-manage-licenses.php:17
 msgid "Register Products"
 msgstr "Produkte registrieren"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/screens/screen-notice-expire.php:15
+#: screens/screen-notice-expire.php:29
 msgid "Update & Support Flatrate expires"
 msgstr "Update & Support Flatrate läuft aus"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/screens/screen-notice-expire.php:17
+#: screens/screen-notice-expire.php:31
 msgid ""
 "It seems like the Update & Support Flatrate of one of your Vendidero "
 "products expires in a few days:"
@@ -152,11 +159,18 @@ msgstr ""
 "Vendidero Produkte in Kürze ablaufen:"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/screens/screen-notice-expire.php:26
+#: screens/screen-notice-expire.php:40
 msgid "Hide this notice"
 msgstr "Nachricht ausblenden"
 
 # @ vendidero-helper
-#: /Users/dennis/Documents/localhost/vendidero/wp-content/plugins/vendidero-helper/vendidero-helper.php:72
+#: vendidero-helper.php:71
 msgid "Once per week"
 msgstr "Einmal pro Woche"
+
+#: vendidero-helper.php:110
+msgid ""
+"Vendidero Helper must be network activated when in multisite environment."
+msgstr ""
+"Der Vendidero Helper muss netzwerkweit aktiviert sein wenn du eine Multisite-"
+"Installation verwendest."

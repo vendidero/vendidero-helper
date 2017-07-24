@@ -11,6 +11,7 @@ class VD_Product {
 	public $meta = array();
 	public $updater = null;
 	public $expires;
+	public $home_url;
 
 	public function __construct( $file, $product_id, $free = false ) {
 		$this->id = $product_id;
@@ -18,13 +19,69 @@ class VD_Product {
 		$this->free = $free;
 		$this->key = '';
 		$this->expires = '';
+		$this->home_url = home_url( '/' );
 		$this->set_meta();
 		$this->slug = sanitize_title( $this->Name );
+
 		$registered = get_option( 'vendidero_registered', array() );
+
+		// Check all the sites for valid registrations
+		if ( is_multisite() && is_network_admin() ) {
+			$registered = $this->get_multisite_registered_data();
+		}
+
 		if ( isset( $registered[ $this->file ] ) ) {
 			$this->key = $registered[ $this->file ]["key"];
 			$this->expires = $registered[ $this->file ]["expires"];
 		}
+	}
+
+	protected function get_multisite_registered_data() {
+
+		if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
+			require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+		}
+
+		$network_wide = false;
+		$plugin_network_wide_registered = true;
+		$registered = array();
+
+		if ( is_plugin_active_for_network( $this->file ) ) {
+			$network_wide = true;
+		}
+
+		foreach( get_sites() as $key => $site ) {
+
+			$plugin_active = $network_wide;
+
+			if ( ! $network_wide ) {
+
+				$plugins = get_blog_option( $site->blog_id, 'active_plugins', array() );
+
+				if ( in_array( $this->file, $plugins ) ) {
+					$plugin_active = true;
+				}
+			}
+
+			// Do only check license if plugin is activated
+			if ( $plugin_active ) {
+
+				$site_registered = get_blog_option( $site->blog_id, 'vendidero_registered', array() );
+
+				if ( ! isset( $site_registered[ $this->file ] ) ) {
+					$plugin_network_wide_registered = false;
+				} else {
+					$registered = $site_registered;
+					$this->home_url = get_home_url( $site->blog_id, '/' );
+				}
+			}
+		}
+
+		if ( ! $plugin_network_wide_registered ) {
+			$registered = array();
+		}
+
+		return $registered;
 	}
 
 	public function set_meta() {
@@ -119,6 +176,10 @@ class VD_Product {
 		}
 
 		update_option( 'vendidero_registered', array_filter( $registered ) );
+	}
+
+	public function get_home_url() {
+		return $this->home_url;
 	}
 
 	public function get_key() {

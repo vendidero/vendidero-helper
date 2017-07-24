@@ -12,7 +12,7 @@ $products = get_option( 'vendidero_notice_expire' );
 $show_notice = false;
 
 foreach ( $products as $key => $val ) {
-	if ( isset( VD()->products[ $key ] ) )
+	if ( VD()->get_product( $key ) )
 		$show_notice = true;
 	else
 		unset( $products[ $key ] );
@@ -30,7 +30,7 @@ if ( ! $show_notice ) {
 	<p>
 		<?php _e( 'It seems like the Update & Support Flatrate of one of your Vendidero products expires in a few days:', 'vendidero-helper' ); ?>
 	</p>
-	<?php foreach( $products as $key => $val ) : $product = VD()->products[ $key ]; ?>
+	<?php foreach( $products as $key => $val ) : $product = VD()->get_product( $key ); ?>
 		<p><strong><?php echo $product->Name; ?></strong></p>
 		<a class="button button-primary" href="<?php echo $product->get_renewal_url();?>" target="_blank"><?php _e( 'renew now', 'vendidero-helper' );?></a>
 	<?php endforeach; ?>

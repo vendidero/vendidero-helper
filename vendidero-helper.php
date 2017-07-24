@@ -3,7 +3,7 @@
  * Plugin Name: Vendidero Helper
  * Plugin URI: http://vendidero.de
  * Description: Will help vendidero users to manage their licenses and receive automatic updates
- * Version: 1.1.4
+ * Version: 1.2.0
  * Author: Vendidero
  * Author URI: http://vendidero.de
  * License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -23,7 +23,7 @@ final class Vendidero_Helper {
      */
     protected static $_instance = null;
 
-    public $version = '1.1.4';
+    public $version = '1.2.0';
 
     private $token = 'vendidero-api';
     private $api_url = 'https://vendidero.de/vd-api/';
@@ -86,10 +86,29 @@ final class Vendidero_Helper {
     }
 
     public function load() {
+
+	    // If multisite, plugin must be network activated. First make sure the is_plugin_active_for_network function exists
+	    if( is_multisite() && ! is_network_admin() ) {
+
+		    remove_action( 'admin_notices', 'vendidero_helper_notice' );
+
+		    if ( ! function_exists( 'is_plugin_active_for_network' ) )
+			    require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
+
+		    if( ! is_plugin_active_for_network( plugin_basename( __FILE__ ) ) ) {
+			    add_action( 'admin_notices', array( $this, 'admin_notice_require_network_activation' ) );
+			    return;
+		    }
+	    }
+
         $this->set_data();
         $this->register_products();
         $this->update_products();
     }
+
+	public function admin_notice_require_network_activation() {
+		echo '<div class="error"><p>' . __( 'Vendidero Helper must be network activated when in multisite environment.', 'vendidero-helper' ) . '</p></div>';
+	}
 
     public function expire_cron() {
         $this->api = new VD_API();

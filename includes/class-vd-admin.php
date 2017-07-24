@@ -141,7 +141,10 @@ class VD_Admin {
 					<h1><?php _e( 'Welcome to Vendidero', 'vendidero-helper' ); ?></h1>
 					<div class="about-text vendidero-updater-about-text">
 						<?php _e( 'Easily manage your licenses for Vendidero Products and enjoy automatic updates.', 'vendidero-helper' ); ?>
-					</div>
+						<?php if ( is_multisite() ) : ?>
+							<?php _e( 'You are running a multisite installation. Please make sure to register your license for every site individually.', 'vendidero-helper' ); ?>
+						<?php endif; ?>
+                    </div>
 					<?php do_action( 'vd_admin_notices' ); ?>
 				</div>
 			</div>
