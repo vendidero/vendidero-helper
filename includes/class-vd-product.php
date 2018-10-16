@@ -42,20 +42,18 @@ class VD_Product {
 			require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
 		}
 
-		$network_wide = false;
-		$plugin_network_wide_registered = true;
-		$registered = array();
+		$network_wide  = false;
+		$registered    = array();
 
 		if ( is_plugin_active_for_network( $this->file ) ) {
 			$network_wide = true;
 		}
 
+		// Search for registration data within sites - if found, escape
 		foreach( get_sites() as $key => $site ) {
-
 			$plugin_active = $network_wide;
 
 			if ( ! $network_wide ) {
-
 				$plugins = get_blog_option( $site->blog_id, 'active_plugins', array() );
 
 				if ( in_array( $this->file, $plugins ) ) {
@@ -68,17 +66,13 @@ class VD_Product {
 
 				$site_registered = get_blog_option( $site->blog_id, 'vendidero_registered', array() );
 
-				if ( ! isset( $site_registered[ $this->file ] ) ) {
-					$plugin_network_wide_registered = false;
-				} else {
-					$registered = $site_registered;
+				if ( isset( $site_registered[ $this->file ] ) ) {
+					$registered     = $site_registered;
 					$this->home_url = get_home_url( $site->blog_id, '/' );
+
+					break;
 				}
 			}
-		}
-
-		if ( ! $plugin_network_wide_registered ) {
-			$registered = array();
 		}
 
 		return $registered;

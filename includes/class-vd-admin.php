@@ -186,8 +186,8 @@ class VD_Admin {
 	public function process_register() {
 		$errors = array();
 		$products = VD()->get_products();
-		if ( isset( $_POST[ 'license_keys' ] ) && 0 < count( $_POST[ 'license_keys' ] ) ) {
-			foreach ( $_POST[ 'license_keys' ] as $file => $key ) {
+		if ( isset( $_POST['license_keys'] ) && 0 < count( $_POST['license_keys'] ) ) {
+			foreach ( $_POST['license_keys'] as $file => $key ) {
 				if ( empty( $key ) || $products[ $file ]->is_registered() )
 					continue;
 				if ( ! VD()->api->register( $products[ $file ], $key ) )

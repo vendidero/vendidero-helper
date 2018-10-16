@@ -17,10 +17,13 @@ class VD_Updater {
 	}
 
 	public function ssl_verify( $args, $url ) {
-		
-		if ( strpos( $url, 'https://vendidero.de' ) !== false )
-			$args[ 'sslverify' ] = false;
-		
+
+		if ( is_admin() ) {
+			if ( apply_filters( 'vd_helper_disable_ssl_verify', false ) && $url == VD()->get_api_url() ) {
+				$args['sslverify'] = false;
+			}
+		}
+
 		return $args; 
 	}
 
@@ -55,8 +58,8 @@ class VD_Updater {
 				} else {
 				
 					$payload = (array) $payload;
-					$payload[ 'theme' ] = $this->product->file;
-					$payload[ 'vd_expire_notice' ] = sprintf( __( 'There is a new Version of %s but your Update Flatrate seems to have expired. Please <a href="%s" target="_blank">renew your Update Flatrate</a> first.', 'vendidero-helper' ), $this->product->Name,  $this->product->get_renewal_url() );
+					$payload['theme'] = $this->product->file;
+					$payload['vd_expire_notice'] = sprintf( __( 'There is a new Version of %s but your Update Flatrate seems to have expired. Please <a href="%s" target="_blank">renew your Update Flatrate</a> first.', 'vendidero-helper' ), $this->product->Name,  $this->product->get_renewal_url() );
 
 				}
 

@@ -3,7 +3,7 @@
  * Plugin Name: Vendidero Helper
  * Plugin URI: http://vendidero.de
  * Description: Will help vendidero users to manage their licenses and receive automatic updates
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: Vendidero
  * Author URI: http://vendidero.de
  * License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -23,7 +23,7 @@ final class Vendidero_Helper {
      */
     protected static $_instance = null;
 
-    public $version = '1.2.0';
+    public $version = '1.2.1';
 
     private $token = 'vendidero-api';
     private $api_url = 'https://vendidero.de/vd-api/';
@@ -42,6 +42,7 @@ final class Vendidero_Helper {
     public static function instance() {
         if ( is_null( self::$_instance ) )
             self::$_instance = new self();
+
         return self::$_instance;
     }
 
@@ -50,6 +51,7 @@ final class Vendidero_Helper {
         // Auto-load classes on demand
         if ( function_exists( "__autoload" ) )
             spl_autoload_register( "__autoload" );
+
         spl_autoload_register( array( $this, 'autoload' ) );
 
         add_filter( 'cron_schedules', array( $this, 'set_weekly_schedule' ) );
@@ -74,7 +76,6 @@ final class Vendidero_Helper {
     }
 
     public function init() {
-        
         // Hook
         $this->api = new VD_API();
         
@@ -256,7 +257,7 @@ final class Vendidero_Helper {
             // Check if is right file dir
             if ( $is_theme && ! isset( $this->themes[ $file ] ) )
                 return false;
-            else if ( ! $is_theme && ! isset( $this->plugins[ $file ] ) )
+            elseif ( ! $is_theme && ! isset( $this->plugins[ $file ] ) )
                 return false;
 
             $this->products[ $file ] = ( $is_theme ? new VD_Product_Theme( $file, $product_id, $free ) : new VD_Product( $file, $product_id, $free ) );

@@ -25,7 +25,7 @@ class VD_Request {
 			return new WP_Error( __( 'Request method not supported', 'vendidero' ) );
 
 		$this->args = array_merge( $this->args, $args );
-		$this->args[ 'request' ] = $type;
+		$this->args['request'] = $type;
 		$this->response = new stdClass();
 		$this->init();
 	}
@@ -47,6 +47,7 @@ class VD_Request {
 			'cookies'     => array(),
 			'sslverify'   => false
 		) );
+
 	    if ( $this->raw != '' )
 	    	$this->response = json_decode( wp_remote_retrieve_body( $this->raw ) );
 	}
@@ -63,13 +64,13 @@ class VD_Request {
 		if ( $type == "filtered" ) {
 			if ( $this->is_error() )
 				return $this->response->error;
-			else if ( isset( $this->response->payload ) )
+			elseif ( isset( $this->response->payload ) )
 				return $this->response->payload;
-			else if ( isset( $this->response->success ) )
+			elseif ( isset( $this->response->success ) )
 				return $this->response->success;
-		} else if ( $type == 'all' )
+		} elseif ( $type == 'all' )
 			return $this->response;
-		else if ( isset( $this->response->$type ) )
+		elseif ( isset( $this->response->$type ) )
 			return $this->response->$type;
 		return false;
 	}
