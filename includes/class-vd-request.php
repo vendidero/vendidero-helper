@@ -11,11 +11,11 @@ class VD_Request {
 		if ( $product ) {
 			$this->product = $product;
 			$this->args = array(
-				'product_id' => $product->id,
+				'product_id'   => $product->id,
 				'product_file' => $product->file,
 				'product_type' => ( $product->is_theme() ? 'theme' : 'plugin' ),
-				'key' => ( $product->is_registered() ? $product->get_key() : false ),
-				'home_url' => esc_url( $product->get_home_url() ),
+				'key'          => ( $product->is_registered() ? $product->get_key() : false ),
+				'home_url'     => esc_url( $product->get_home_url() ),
 			);
 		} else {
 			$this->args[ 'home_url' ] = esc_url( home_url( '/' ) );
