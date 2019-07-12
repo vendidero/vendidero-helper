@@ -9,7 +9,6 @@ jQuery( function( $ ) {
 	}
 
 	if ( $( 'body' ).hasClass( 'update-core-php' ) ) {
-
 		$( '.vd-upgrade-notice' ).each( function() {
 			
 			var text = $( this ).html();
@@ -24,7 +23,5 @@ jQuery( function( $ ) {
 			}
 
 		});
-
 	}
-
 });

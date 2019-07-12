@@ -7,23 +7,23 @@ class VD_Product {
 	public $slug;
 	public $free = false;
 	public $theme = false;
-	private $key;
 	public $meta = array();
 	public $updater = null;
 	public $expires;
 	public $home_url;
+    private $key;
 
 	public function __construct( $file, $product_id, $free = false ) {
-		$this->id = $product_id;
-		$this->file = $file;
-		$this->free = $free;
-		$this->key = '';
-		$this->expires = '';
+		$this->id       = $product_id;
+		$this->file     = $file;
+		$this->free     = $free;
+		$this->key      = '';
+		$this->expires  = '';
 		$this->home_url = home_url( '/' );
-		$this->set_meta();
-		$this->slug = sanitize_title( $this->Name );
+        $this->set_meta();
+        $this->slug     = sanitize_title( $this->Name );
 
-		$registered = get_option( 'vendidero_registered', array() );
+		$registered     = get_option( 'vendidero_registered', array() );
 
 		// Check all the sites for valid registrations
 		if ( is_multisite() && is_network_admin() ) {
@@ -31,7 +31,7 @@ class VD_Product {
 		}
 
 		if ( isset( $registered[ $this->file ] ) ) {
-			$this->key = $registered[ $this->file ]["key"];
+			$this->key     = $registered[ $this->file ]["key"];
 			$this->expires = $registered[ $this->file ]["expires"];
 		}
 	}
@@ -79,7 +79,7 @@ class VD_Product {
 	}
 
 	public function set_meta() {
-		$this->meta = VD()->plugins[$this->file];
+		$this->meta = VD()->plugins[ $this->file ];
 	}
 
 	public function __get( $key ) {
@@ -113,59 +113,78 @@ class VD_Product {
 	public function refresh_expiration_date() {
 		if ( $this->is_registered() ) {
 			$expire = VD()->api->expiration_check( $this );
-			if ( $expire )
+
+			if ( ! is_wp_error( $expire ) ) {
                 $this->set_expiration_date( $expire );
+            }
+
+            return $expire;
 		}
+
+		return false;
 	}
 
 	public function get_expiration_date( $format = 'd.m.Y' ) {
-		if ( ! $this->is_registered() || empty( $this->expires ) )
+		if ( ! $this->is_registered() || empty( $this->expires ) ) {
 			return false;
+        }
+
 		$date = $this->expires;
+
 		return ( ! $format ? $date : date( $format, strtotime( $date ) ) );
 	}
 
 	public function has_expired() {
-		if ( ! $this->is_registered() || empty( $this->expires ) )
+		if ( ! $this->is_registered() || empty( $this->expires ) ) {
 			return false;
-        if ( ( strtotime( $this->expires ) < time() ) ) 
+        }
+
+        if ( ( strtotime( $this->expires ) < time() ) ) {
             return true;
+        }
+
         return false;
 	}
 
 	public function register( $key, $expires = '' ) {
 		$registered = get_option( 'vendidero_registered', array() );
+
 		if ( ! isset( $registered[ $this->file ] ) ) {
 			$registered[ $this->file ] = array( "key" => md5( $key ), "expires" => $expires );
-			$this->expires = $registered[ $this->file ]["expires"];
-			$this->key = $registered[ $this->file ]["key"];
+			$this->expires             = $registered[ $this->file ]["expires"];
+			$this->key                 = $registered[ $this->file ]["key"];
 		}
+
 		update_option( 'vendidero_registered', $registered );
 	}
 
 	public function set_expiration_date( $expires ) {
 		$registered = get_option( 'vendidero_registered', array() );
+
 		if ( isset( $registered[ $this->file ] ) ) {
 			$registered[ $this->file ]["expires"] = $expires;
-			$this->expires = $registered[ $this->file ]["expires"];
+			$this->expires                        = $registered[ $this->file ]["expires"];
 		}
+
 		update_option( 'vendidero_registered', $registered );
 	}
 
 	public function unregister() {
-		
 		$registered = get_option( 'vendidero_registered', array() );
 		
 		if ( isset( $registered[ $this->file ] ) ) {
 			unset( $registered[ $this->file ] );
-			$this->key = '';
+
+			$this->key     = '';
 			$this->expires = '';
 		}
 
 		if ( ! empty( $registered ) ) {
 			foreach( $registered as $key => $val ) {
-				if ( is_numeric( $key ) )
+
+				if ( is_numeric( $key ) ) {
 					unset( $registered[ $key ] );
+                }
 			}
 		}
 
@@ -177,11 +196,14 @@ class VD_Product {
 	}
 
 	public function get_key() {
-		if ( ! $this->is_registered() )
+		if ( ! $this->is_registered() ) {
 			return false;
-		if ( $this->is_free() )
+        }
+
+        if ( $this->is_free() ) {
 			return '';
+        }
+
 		return $this->key;
 	}
-
 }
