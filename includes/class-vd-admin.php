@@ -79,7 +79,7 @@ class VD_Admin {
 						$product->refresh_expiration_date();
 
 						if ( $product->has_expired() ) {
-							echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please <a href="%s">check</a> your license before updating.', 'vendidero-helper' ), admin_url( 'index.php?page=vendidero' ) ) . '</span></div>';
+							echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . admin_url( 'index.php?page=vendidero' ) . '">' . __( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -93,7 +93,7 @@ class VD_Admin {
                         $product->refresh_expiration_date();
 	
 						if ( $product->has_expired() ) {
-                            echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please <a href="%s">check</a> your license before updating.', 'vendidero-helper' ), admin_url( 'index.php?page=vendidero' ) ) . '</span></div>';
+                            echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . admin_url( 'index.php?page=vendidero' ) . '">' . __( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -157,18 +157,20 @@ class VD_Admin {
 
 			if ( ! $product->is_registered() ) { ?>
 				<div class="error">
-			        <p><?php printf( __( 'Your %s license doesn\'t seem to be registered. Please <a style="margin-left: 1em" href="%s" class="button button-secondary">Manage your licenses</a>', 'vendidero-helper' ), $product->Name, $admin_url ); ?></p>
+			        <p><?php printf( __( 'Your %s license doesn\'t seem to be registered. Please %s', 'vendidero-helper' ), $product->Name, '<a style="margin-left: 5px;" class="button button-secondary" href="' . $admin_url . '">' . __( 'manage your licenses', 'vendidero-helper' ) . '</a>' ); ?></p>
 			    </div>
             <?php } elseif( $product->has_expired() ) { ?>
                 <div class="error">
-                    <p><?php printf( __( 'Your %s license seems to have expired. Please <a style="margin-left: 1em" href="%s" class="button button-secondary">Manage your licenses</a>', 'vendidero-helper' ), $product->Name, $admin_url ); ?></p>
+                    <p><?php printf( __( 'Your %s license seems to have expired. Please %s', 'vendidero-helper' ), $product->Name, '<a style="margin-left: 5px;" class="button button-secondary" href="' . $admin_url . '">' . __( 'manage your licenses', 'vendidero-helper' ) . '</a>' ); ?></p>
                 </div>
 			<?php }
 		}
 	}
 
 	public function screen() {
-		?><div class="vd-wrapper">
+		?>
+
+        <div class="vd-wrapper">
 			<div class="wrap about-wrap vendidero-wrap">
 				<div class="col-wrap">
 					<h1><?php _e( 'Welcome to Vendidero', 'vendidero-helper' ); ?></h1>
@@ -179,12 +181,13 @@ class VD_Admin {
 					<?php do_action( 'vd_admin_notices' ); ?>
 				</div>
 			</div>
-		</div>
-		<?php if ( VD()->api->ping() ) : ?>
-			<?php require_once( VD()->plugin_path() . '/screens/screen-manage-licenses.php' ); ?>
-		<?php else : ?>
-			<?php require_once( VD()->plugin_path() . '/screens/screen-api-unavailable.php' ); ?>
-		<?php endif; ?>
+
+            <?php if ( VD()->api->ping() ) : ?>
+                <?php require_once( VD()->plugin_path() . '/screens/screen-manage-licenses.php' ); ?>
+            <?php else : ?>
+                <?php require_once( VD()->plugin_path() . '/screens/screen-api-unavailable.php' ); ?>
+            <?php endif; ?>
+        </div>
 
 		<?php
 	}
