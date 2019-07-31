@@ -42,7 +42,7 @@ class VD_Product {
 
         $this->set_meta();
         $this->slug     = sanitize_title( $this->Name );
-		$registered     = get_option( 'vendidero_registered', array() );
+		$registered     = $this->get_options();
 
 		if ( isset( $registered[ $this->file ] ) ) {
 			$this->key     = $registered[ $this->file ]["key"];
@@ -122,8 +122,24 @@ class VD_Product {
         return false;
 	}
 
+	protected function get_options() {
+		if( is_multisite() ) {
+			return get_site_option( 'vendidero_registered', array() );
+		} else {
+			return get_option( 'vendidero_registered', array() );
+		}
+	}
+
+	protected function update_options( $data ) {
+		if( is_multisite() ) {
+			return update_site_option( 'vendidero_registered', $data );
+		} else {
+			return update_option( 'vendidero_registered', $data );
+		}
+	}
+
 	public function register( $key, $expires = '' ) {
-		$registered = get_option( 'vendidero_registered', array() );
+		$registered = $this->get_options();
 
 		if ( ! isset( $registered[ $this->file ] ) ) {
 			$registered[ $this->file ] = array( "key" => md5( $key ), "expires" => $expires );
@@ -131,22 +147,22 @@ class VD_Product {
 			$this->key                 = $registered[ $this->file ]["key"];
 		}
 
-		update_option( 'vendidero_registered', $registered );
+		$this->update_options( $registered );
 	}
 
 	public function set_expiration_date( $expires ) {
-		$registered = get_option( 'vendidero_registered', array() );
+		$registered = $this->get_options();
 
 		if ( isset( $registered[ $this->file ] ) ) {
 			$registered[ $this->file ]["expires"] = $expires;
 			$this->expires                        = $registered[ $this->file ]["expires"];
 		}
 
-		update_option( 'vendidero_registered', $registered );
+		$this->update_options( $registered );
 	}
 
 	public function unregister() {
-		$registered = get_option( 'vendidero_registered', array() );
+		$registered = $this->get_options();
 		
 		if ( isset( $registered[ $this->file ] ) ) {
 			unset( $registered[ $this->file ] );
@@ -164,7 +180,7 @@ class VD_Product {
 			}
 		}
 
-		update_option( 'vendidero_registered', array_filter( $registered ) );
+		$this->update_options( array_filter( $registered ) );
 	}
 
 	public function get_home_url() {
