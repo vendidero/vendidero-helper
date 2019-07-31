@@ -50,20 +50,13 @@ class VD_Admin_License_Table extends WP_List_Table {
     }
 
     public function get_columns() {
+
         $columns = array(
-            'product_name'    => __( 'Product', 'vendidero-helper' )
-        );
-
-        if ( is_multisite() ) {
-            $columns['product_activated'] = __( 'Active on', 'vendidero-helper' );
-        }
-
-        $columns = array_merge( $columns, array(
+	        'product_name'          => __( 'Product', 'vendidero-helper' ),
             'product_version'       => __( 'Version', 'vendidero-helper' ),
-            'product_domain_status' => __( 'Domain status', 'vendidero-helper' ),
             'product_expires'       => __( 'Update & Support', 'vendidero-helper' ),
             'product_status'        => __( 'License Key', 'vendidero-helper' )
-        ) );
+        );
 
         return $columns;
     }
@@ -75,16 +68,16 @@ class VD_Admin_License_Table extends WP_List_Table {
      */
     public function column_product_name( $item ) {
         echo wpautop( '<strong title="' . esc_attr( $item->file ) . '">' . $item->Name . '</strong>' );
-    }
 
-    public function column_product_activated( $item ) {
-        if ( is_multisite() ) {
-            $count = 0;
+	    $count = 0;
 
-            foreach( $item->blog_ids as $blog_id ) {
-                echo ( ( ++$count > 1 ) ? ', ' : '' ) . get_site_url( $blog_id );
-            }
-        }
+	    echo '<span class="active-on">';
+
+	    foreach( $item->get_home_url() as $url ) {
+		    echo ( ( ++$count > 1 ) ? ', ' : '' ) . $url;
+	    }
+
+	    echo '</span>';
     }
 
     /**
@@ -96,7 +89,7 @@ class VD_Admin_License_Table extends WP_List_Table {
         if ( $item->get_expiration_date() ) {
 
             if ( $item->has_expired() ) {
-                return '<a href="' . $item->get_renewal_url() . '" class="button-secondary" target="_blank">' . __( 'renew now', 'vendidero-helper' ) . '</a>';
+                return '<a href="' . $item->get_renewal_url() . '" class="button button-primary" target="_blank">' . __( 'renew now', 'vendidero-helper' ) . '</a>';
             }
 
             return $item->get_expiration_date();
@@ -105,12 +98,34 @@ class VD_Admin_License_Table extends WP_List_Table {
         return '-';
     }
 
-    public function column_product_domain_status( $item ) {
-
-    }
-
+	/**
+	 * @param VD_Product $item
+	 *
+	 * @return string
+	 */
     public function column_product_version( $item ) {
-        return wpautop( $item->Version );
+    	$latest          = VD()->api->info( $item );
+	    $current_version = $item->Version;
+	    $status          = 'latest';
+	    $new_version     = '';
+
+    	if ( $latest ) {
+    		if ( version_compare( $latest->version, $current_version, '>' ) ) {
+    			$update_url  = ( is_multisite() ? network_admin_url( 'update-core.php' ) : admin_url( 'update-core.php' ) );
+    			$status      = 'old';
+    			$new_version =  __( 'Newest version:', 'vendidero-helper' ) . ' <span class="version version-latest">' . $latest->version . '</span>';
+
+    			if ( ! $item->has_expired() ) {
+				    $new_version .= '<br/>' . '<a class="button button-secondary" href="' . $update_url . '">' . __( 'Check for updates', 'vendidero-helper' ) . '</a>';
+			    }
+		    }
+	    }
+
+    	echo '<span class="version version-' . $status . '">' . $current_version . '</span>';
+
+    	if ( ! empty( $new_version ) ) {
+    		echo $new_version;
+	    }
     }
 
     /**
@@ -122,10 +137,13 @@ class VD_Admin_License_Table extends WP_List_Table {
         $response = '';
 
         if ( $item->is_registered() ) {
-            $unregister_url = wp_nonce_url( add_query_arg( 'action', 'vd_unregister', add_query_arg( 'filepath', $item->file, add_query_arg( 'page', 'vendidero', admin_url( 'index.php' ) ) ) ), 'bulk_licenses' );
-            $response = '<a href="' . esc_url( $unregister_url ) . '">' . __( 'Unregister', 'vendidero-helper' ) . '</a>' . "\n";
+        	$base_url       = ( is_multisite() ) ? network_admin_url( 'index.php' ) : admin_url( 'index.php' );
+
+            $unregister_url = wp_nonce_url( add_query_arg( 'action', 'vd_unregister', add_query_arg( 'filepath', $item->file, add_query_arg( 'page', 'vendidero', $base_url ) ) ), 'bulk_licenses' );
+            $response       = '<a href="' . esc_url( $unregister_url ) . '">' . __( 'Unregister', 'vendidero-helper' ) . '</a>' . "\n";
         } else {
-            $response .= '<input name="license_keys[' . esc_attr( $item->file ) . ']" id="license_keys-' . esc_attr( $item->file ) . '" type="text" value="" style="width: 100%" aria-required="true" placeholder="' . esc_attr( sprintf( __( 'Place %s license key here', 'vendidero-helper' ), $item->Name ) ) . '" />' . "\n";
+            $response .= '<input name="license_keys[' . esc_attr( $item->file ) . ']" id="license_keys-' . esc_attr( $item->file ) . '" type="text" value="" style="width: 100%" aria-required="true" placeholder="' . esc_attr( __( 'Enter license key', 'vendidero-helper' ) ) . '" /><br/>';
+            $response .= '<a href="https://vendidero.de/dashboard/licenses/" target="_blank">' . __( 'Find your license key', 'vendidero-helper' ) . '</a>';
         }
 
         return $response;

@@ -11,10 +11,11 @@ class VD_Product {
 	public $updater = null;
 	public $blog_ids = array();
 	public $expires;
-	public $home_url;
+	public $home_url = array();
     private $key;
 
 	public function __construct( $file, $product_id, $args = array() ) {
+
         $args = wp_parse_args( $args, array(
             'free'     => false,
             'blog_ids' => array(),
@@ -26,63 +27,27 @@ class VD_Product {
         $this->blog_ids = $args['blog_ids'];
 		$this->key      = '';
 		$this->expires  = '';
-		$this->home_url = home_url( '/' );
+		$this->home_url = array();
+
+		if ( ! empty( $this->blog_ids ) ) {
+
+			foreach( $this->blog_ids as $blog_id ) {
+				$this->home_url[] = VD()->sanitize_domain( get_home_url( $blog_id, '/' ) );
+			}
+		} else {
+			$this->home_url[] = VD()->sanitize_domain( home_url( '/' ) );
+		}
+
+		$this->home_url = array_values( array_unique( $this->home_url ) );
+
         $this->set_meta();
         $this->slug     = sanitize_title( $this->Name );
-
 		$registered     = get_option( 'vendidero_registered', array() );
-
-		// Check all the sites for valid registrations
-		if ( is_multisite() && is_network_admin() ) {
-			$registered = $this->get_multisite_registered_data();
-		}
 
 		if ( isset( $registered[ $this->file ] ) ) {
 			$this->key     = $registered[ $this->file ]["key"];
 			$this->expires = $registered[ $this->file ]["expires"];
 		}
-	}
-
-	protected function get_multisite_registered_data() {
-
-		if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
-			require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
-		}
-
-		$network_wide  = false;
-		$registered    = array();
-
-		if ( is_plugin_active_for_network( $this->file ) ) {
-			$network_wide = true;
-		}
-
-		// Search for registration data within sites - if found, escape
-		foreach( get_sites() as $key => $site ) {
-			$plugin_active = $network_wide;
-
-			if ( ! $network_wide ) {
-				$plugins = get_blog_option( $site->blog_id, 'active_plugins', array() );
-
-				if ( in_array( $this->file, $plugins ) ) {
-					$plugin_active = true;
-				}
-			}
-
-			// Do only check license if plugin is activated
-			if ( $plugin_active ) {
-
-				$site_registered = get_blog_option( $site->blog_id, 'vendidero_registered', array() );
-
-				if ( isset( $site_registered[ $this->file ] ) ) {
-					$registered     = $site_registered;
-					$this->home_url = get_home_url( $site->blog_id, '/' );
-
-					break;
-				}
-			}
-		}
-
-		return $registered;
 	}
 
 	public function set_meta() {
@@ -99,6 +64,10 @@ class VD_Product {
 
 	public function is_theme() {
 		return $this->theme;
+	}
+
+	public function get_blog_ids() {
+		return $this->blog_ids;
 	}
 
 	public function get_url() {

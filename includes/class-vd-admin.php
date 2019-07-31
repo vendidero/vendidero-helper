@@ -5,11 +5,20 @@ class VD_Admin {
 	public $notices = array();
 
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'add_menu' ) );
+
+	    if ( is_multisite() ) {
+		    add_action( 'network_admin_menu', array( $this, 'add_menu' ) );
+        } else {
+		    add_action( 'admin_menu', array( $this, 'add_menu' ) );
+        }
+
 		add_action( 'vd_process_register', array( $this, 'process_register' ) );
 		add_action( 'vd_process_unregister', array( $this, 'process_unregister' ) );
 		add_filter( 'plugins_api', array( $this, 'plugins_api_filter' ), 150, 3 );
 		add_action( 'in_admin_header', array( $this, 'set_upgrade_notice' ) );
+
+		add_action( 'admin_notices', array( $this, 'product_registered' ) );
+		add_action( 'network_admin_notices', array( $this, 'product_registered' ) );
 	}
 
 	public function plugins_api_filter( $result, $action, $args ) {
@@ -97,7 +106,6 @@ class VD_Admin {
 
 		add_action( 'load-' . $hook, array( $this, 'process' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'admin_notices', array( $this, 'product_registered' ) );
 		add_action( 'load-' . $hook, array( $this, 'license_refresh' ) );
 	}
 
@@ -111,7 +119,10 @@ class VD_Admin {
                 $result = $product->refresh_expiration_date();
 
                 if ( is_wp_error( $result ) ) {
-                    $errors[] = $result->get_error_message( $result->get_error_code() );
+
+                    foreach( $result->get_error_messages( $result->get_error_code() ) as $message ) {
+                        $errors[] = $message;
+                    }
                 }
             }
 
@@ -121,21 +132,38 @@ class VD_Admin {
         }
 	}
 
+	public function get_notice_excluded_screens() {
+	    return array( 'index_page_vendidero-network', 'dashboard_page_vendidero', 'update-core-network', 'update-core' );
+    }
+
 	public function product_registered() {
 		$screen = get_current_screen();
 
-		if ( 'dashboard_page_vendidero' === $screen->id ) {
+		if ( in_array( $screen->id, $this->get_notice_excluded_screens() ) ) {
 			return;
         }
 
+		$admin_url = is_multisite() ? network_admin_url( 'index.php?page=vendidero' ) : admin_url( 'index.php?page=vendidero' );
+
 		foreach ( VD()->get_products( false ) as $product ) {
-			if ( ! $product->is_registered() ) {
-				?>
+
+		    if ( is_multisite() ) {
+			    $blog_id = get_current_blog_id();
+
+			    if ( ! in_array( $blog_id, $product->get_blog_ids() ) && ! is_network_admin() ) {
+				    continue;
+			    }
+            }
+
+			if ( ! $product->is_registered() ) { ?>
 				<div class="error">
-			        <p><?php printf( __( 'Your %s license doesn\'t seem to be registered or your Update Flatrate has expired <a style="margin-left: 1em" href="%s" class="button button-secondary">Manage your licenses</a>', 'vendidero-helper' ), $product->Name, admin_url( 'index.php?page=vendidero' ) ); ?></p>
+			        <p><?php printf( __( 'Your %s license doesn\'t seem to be registered. Please <a style="margin-left: 1em" href="%s" class="button button-secondary">Manage your licenses</a>', 'vendidero-helper' ), $product->Name, $admin_url ); ?></p>
 			    </div>
-				<?php
-			}
+            <?php } elseif( $product->has_expired() ) { ?>
+                <div class="error">
+                    <p><?php printf( __( 'Your %s license seems to have expired. Please <a style="margin-left: 1em" href="%s" class="button button-secondary">Manage your licenses</a>', 'vendidero-helper' ), $product->Name, $admin_url ); ?></p>
+                </div>
+			<?php }
 		}
 	}
 
@@ -146,10 +174,6 @@ class VD_Admin {
 					<h1><?php _e( 'Welcome to Vendidero', 'vendidero-helper' ); ?></h1>
 					<div class="about-text vendidero-updater-about-text">
 						<?php _e( 'Easily manage your licenses for Vendidero Products and enjoy automatic updates.', 'vendidero-helper' ); ?>
-
-                        <?php if ( is_multisite() ) : ?>
-							<?php _e( 'You are running a multisite installation. Please make sure to register your license for every site individually.', 'vendidero-helper' ); ?>
-						<?php endif; ?>
                     </div>
 
 					<?php do_action( 'vd_admin_notices' ); ?>

@@ -31,7 +31,9 @@ class VD_Updater {
 		$request = VD()->api->update_check( $this->product, $this->product->get_key() );
 		
 		if ( $request->is_error() ) {
-			$this->add_notice( $request->get_response() );
+			$error = $request->get_response();
+
+			$this->add_notice( $error->get_error_messages( $error->get_error_code() ) );
 		} else {
 		
 			if ( $request->get_response( "notice" ) ) {
@@ -67,6 +69,7 @@ class VD_Updater {
 		$this->notices = array( "msg" => $notice, "type" => $type );
 
 		add_action( "admin_notices", array( $this, "print_notice" ) );
+		add_action( "network_admin_notices", array( $this, "print_notice" ) );
 	}
 
 	public function print_notice() {

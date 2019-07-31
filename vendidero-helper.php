@@ -206,11 +206,11 @@ final class Vendidero_Helper {
 	        $new_products = array();
 
 	        foreach ( $products as $key => $val ) {
+
 		        if ( isset( VD()->products[ $key ] ) ) {
 			        $product = VD()->products[ $key ];
 
 			        if ( $expire = $product->get_expiration_date( false ) ) {
-
 			        	$diff = VD()->get_date_diff( date( 'Y-m-d' ), $expire );
 
 				        if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
@@ -237,7 +237,8 @@ final class Vendidero_Helper {
         $plugins = get_plugins();
 
         foreach( $plugins as $plugin_file => $plugin_data ) {
-            // Make sure plugin info is translated
+
+        	// Make sure plugin info is translated
             if ( function_exists( '_get_plugin_data_markup_translate' ) ) {
                 $plugin_data = _get_plugin_data_markup_translate( $plugin_file, (array) $plugin_data, false, true );
             }
@@ -248,6 +249,7 @@ final class Vendidero_Helper {
         $themes = wp_get_themes();
         
         if ( ! empty( $themes ) ) {
+
             foreach ( $themes as $theme ) {
                 $this->themes[ basename( $theme->__get( 'stylesheet_dir' ) ) . '/style.css' ] = $theme;
             }
@@ -292,30 +294,62 @@ final class Vendidero_Helper {
         }
     }
 
+	public function sanitize_domain( $domain ) {
+		$domain = esc_url_raw( $domain );
+		$parsed = @parse_url( $domain );
+
+		if ( empty( $parsed ) || empty( $parsed['host'] ) ) {
+			return '';
+		}
+
+		// Remove www. prefix
+		$parsed['host'] = str_replace( 'www.', '', $parsed['host'] );
+		$domain         = $parsed['host'];
+
+		return $domain;
+	}
+
     public function get_available_plugins() {
         return array(
             'woocommerce-germanized-pro/woocommerce-germanized-pro.php' => 148,
         );
     }
 
+	public function get_available_themes() {
+		return array(
+			'vendipro/style.css' => 48,
+		);
+	}
+
     public function includes() {
         include_once( $this->plugin_path() . '/includes/class-vd-admin.php' );
     }
 
     public function register_products() {
-        $products = apply_filters( 'vendidero_updateable_products', array() );
-        $available_plugins = $this->get_available_plugins();
+        $product_data      = apply_filters( 'vendidero_updateable_products', array() );
+        $products          = array();
+	    $available_plugins = $this->get_available_plugins();
+	    $available_themes  = $this->get_available_themes();
+
+        foreach( $product_data as $product ) {
+        	$products[ $product->file ] = $product;
+        }
 
         if ( is_multisite() ) {
             foreach( get_sites() as $site ) {
                 $plugins = get_blog_option( $site->blog_id, 'active_plugins' );
+	            $theme   = get_blog_option( $site->blog_id, 'stylesheet' );
 
                 if ( ! empty( $plugins ) ) {
                     foreach( $available_plugins as $file => $product_id ) {
 
                         if ( in_array( $file, $plugins ) ) {
-
                             if ( array_key_exists( $file, $products ) ) {
+
+                            	if ( ! isset( $products[ $file ]->blog_ids ) ) {
+                            		$products[ $file ]->blog_ids = array();
+	                            }
+
                                 $products[ $file ]->blog_ids[] = $site->blog_id;
                             } else {
                                 $plugin             = new stdClass();
@@ -327,6 +361,30 @@ final class Vendidero_Helper {
                             }
                         }
                     }
+                }
+
+                if ( $theme ) {
+                	$theme = strpos( $theme, 'style.css' ) === false ? $theme . '/style.css' : $theme;
+
+                	foreach( $available_themes as $file => $product_id ) {
+		                if ( $theme === $file ) {
+			                if ( array_key_exists( $file, $products ) ) {
+
+				                if ( ! isset( $products[ $file ]->blog_ids ) ) {
+					                $products[ $file ]->blog_ids = array();
+				                }
+
+				                $products[ $file ]->blog_ids[] = $site->blog_id;
+			                } else {
+				                $plugin             = new stdClass();
+				                $plugin->file       = $file;
+				                $plugin->product_id = $product_id;
+				                $plugin->blog_ids   = array( $site->blog_id );
+
+				                $products[ $plugin->file ] = $plugin;
+			                }
+		                }
+	                }
                 }
             }
         }
@@ -362,7 +420,7 @@ final class Vendidero_Helper {
         ) );
 
         if ( $file != '' && ! isset( $this->products[ $file ] ) ) {
-            $is_theme = ( strpos( $file, 'style.css' ) ? true : false );
+            $is_theme = ( strpos( $file, 'style.css' ) === false ? false : true );
 
             // Check if is right file dir
             if ( $is_theme && ! isset( $this->themes[ $file ] ) ) {
