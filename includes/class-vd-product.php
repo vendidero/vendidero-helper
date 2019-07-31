@@ -9,14 +9,21 @@ class VD_Product {
 	public $theme = false;
 	public $meta = array();
 	public $updater = null;
+	public $blog_ids = array();
 	public $expires;
 	public $home_url;
     private $key;
 
-	public function __construct( $file, $product_id, $free = false ) {
-		$this->id       = $product_id;
-		$this->file     = $file;
-		$this->free     = $free;
+	public function __construct( $file, $product_id, $args = array() ) {
+        $args = wp_parse_args( $args, array(
+            'free'     => false,
+            'blog_ids' => array(),
+        ) );
+
+        $this->id       = $product_id;
+        $this->file     = $file;
+        $this->free     = $args['free'];
+        $this->blog_ids = $args['blog_ids'];
 		$this->key      = '';
 		$this->expires  = '';
 		$this->home_url = home_url( '/' );

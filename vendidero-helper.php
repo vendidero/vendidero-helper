@@ -292,24 +292,56 @@ final class Vendidero_Helper {
         }
     }
 
+    public function get_available_plugins() {
+        return array(
+            'woocommerce-germanized-pro/woocommerce-germanized-pro.php' => 148,
+        );
+    }
+
     public function includes() {
         include_once( $this->plugin_path() . '/includes/class-vd-admin.php' );
     }
 
     public function register_products() {
         $products = apply_filters( 'vendidero_updateable_products', array() );
+        $available_plugins = $this->get_available_plugins();
+
+        if ( is_multisite() ) {
+            foreach( get_sites() as $site ) {
+                $plugins = get_blog_option( $site->blog_id, 'active_plugins' );
+
+                if ( ! empty( $plugins ) ) {
+                    foreach( $available_plugins as $file => $product_id ) {
+
+                        if ( in_array( $file, $plugins ) ) {
+
+                            if ( array_key_exists( $file, $products ) ) {
+                                $products[ $file ]->blog_ids[] = $site->blog_id;
+                            } else {
+                                $plugin             = new stdClass();
+                                $plugin->file       = $file;
+                                $plugin->product_id = $product_id;
+                                $plugin->blog_ids   = array( $site->blog_id );
+
+                                $products[ $plugin->file ] = $plugin;
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         if ( ! empty( $products ) && is_array( $products ) ) {
-            foreach ( $products as $plugin ) {
+            foreach ( $products as $product ) {
 
-                if ( is_object( $plugin ) && ! empty( $plugin->file ) && ! empty( $plugin->product_id ) ) {
-                    $this->add_product( $plugin->file, $plugin->product_id );
+                if ( is_object( $product ) && ! empty( $product->file ) && ! empty( $product->product_id ) ) {
+                    $this->add_product( $product->file, $product->product_id, array( 'blog_ids' => isset( $product->blog_ids ) ? $product->blog_ids : array() ) );
                 }
             }
         }
 
         // Self update
-        $this->add_product( 'vendidero-helper/vendidero-helper.php', 2198, true );
+        $this->add_product( 'vendidero-helper/vendidero-helper.php', 2198, array( 'free' => true ) );
     }
 
     public function update_products() {
@@ -323,7 +355,12 @@ final class Vendidero_Helper {
         }
     }
 
-    public function add_product( $file, $product_id, $free = false ) {
+    public function add_product( $file, $product_id, $args = array() ) {
+        $args = wp_parse_args( $args, array(
+            'free'     => false,
+            'blog_ids' => array(),
+        ) );
+
         if ( $file != '' && ! isset( $this->products[ $file ] ) ) {
             $is_theme = ( strpos( $file, 'style.css' ) ? true : false );
 
@@ -334,7 +371,7 @@ final class Vendidero_Helper {
                 return false;
             }
 
-            $this->products[ $file ] = ( $is_theme ? new VD_Product_Theme( $file, $product_id, $free ) : new VD_Product( $file, $product_id, $free ) );
+            $this->products[ $file ] = ( $is_theme ? new VD_Product_Theme( $file, $product_id, $args ) : new VD_Product( $file, $product_id, $args ) );
         }
     }
 

@@ -2,8 +2,8 @@
 
 class VD_Product_Theme extends VD_Product {
 
-	public function __construct( $file, $product_id, $is_free = false ) {
-		parent::__construct( $file, $product_id, $is_free = false );
+	public function __construct( $file, $product_id, $args = array() ) {
+		parent::__construct( $file, $product_id, $args );
 
 		$this->theme = true;
 	}
