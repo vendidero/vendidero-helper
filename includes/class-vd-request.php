@@ -2,31 +2,30 @@
 
 class VD_Request {
 
-	public $product = null;
+	public $product   = null;
 	private $response = null;
-	private $raw = null;
-	private $args = array();
+	private $raw      = null;
+	private $args     = array();
+	private $code     = 500;
 
-	public function __construct( $type = 'update_check', VD_Product $product = null, $args = array() ) {
-		if ( $product ) {
-			$this->product = $product;
-			$this->args = array(
-				'product_id'   => $product->id,
-				'product_file' => $product->file,
-				'product_type' => ( $product->is_theme() ? 'theme' : 'plugin' ),
-				'key'          => ( $product->is_registered() ? $product->get_key() : false ),
-				'home_url'     => esc_url( $product->get_home_url() ),
-			);
+	public function __construct( $type = 'ping', VD_Product $product = null, $args = array() ) {
+        $default_args = array(
+            'method'  => 'GET',
+            'request' => $type,
+        );
+
+	    if ( $product ) {
+			$this->product          = $product;
+			$default_args['id']     = $product->id;
+            $default_args['key']    = ( $product->is_registered() ? $product->get_key() : false );
+            $default_args['domain'] = array_map( 'esc_url', $product->get_home_url() );
 		} else {
-			$this->args[ 'home_url' ] = esc_url( home_url( '/' ) );
+            $default_args['domain'] = esc_url( home_url( '/' ) );
 		}
 
-		if ( ! in_array( $type, array( 'update_check', 'update', 'ping', 'register', 'unregister', 'expiration_check', 'license_check', 'generator_version_check', 'generator_check', 'generator_result_check', 'info' ) ) )
-			return new WP_Error( __( 'Request method not supported', 'vendidero' ) );
-
-		$this->args = array_merge( $this->args, $args );
-		$this->args['request'] = $type;
+		$this->args     = wp_parse_args( $args, $default_args );
 		$this->response = new stdClass();
+
 		$this->init();
 	}
 
@@ -34,47 +33,77 @@ class VD_Request {
 		$this->do_request();
 	}
 
-	public function do_request() {
-		// Send request
-	    $this->raw = wp_remote_post( VD()->get_api_url(), array(
-			'method'      => 'POST',
-			'timeout'     => 45,
-			'redirection' => 5,
-			'httpversion' => '1.0',
-			'blocking'    => true,
-			'headers'     => array( 'user-agent' => 'Vendidero/' . VD()->version ),
-			'body'        => $this->args,
-			'cookies'     => array(),
-			'sslverify'   => false
-		) );
+	private function get_endpoint() {
+	    return VD()->get_api_url() . $this->args['request'];
+    }
 
-	    if ( $this->raw != '' )
+	public function do_request() {
+	    if ( 'GET' === $this->args['method'] ) {
+	        $url = add_query_arg( $this->args, $this->get_endpoint() );
+
+            $this->raw = wp_remote_get( $url, array(
+                'timeout'     => 45,
+                'redirection' => 5,
+                'httpversion' => '1.0',
+                'blocking'    => true,
+                'headers'     => array( 'user-agent' => 'Vendidero/' . VD()->version ),
+                'cookies'     => array(),
+                'sslverify'   => false
+            ) );
+        } else {
+
+            $this->raw = wp_remote_post( $this->get_endpoint(), array(
+                'method'      => 'POST',
+                'timeout'     => 45,
+                'redirection' => 5,
+                'httpversion' => '1.0',
+                'blocking'    => true,
+                'headers'     => array( 'user-agent' => 'Vendidero/' . VD()->version ),
+                'body'        => $this->args,
+                'cookies'     => array(),
+                'sslverify'   => false
+            ) );
+        }
+
+	    if ( '' !== $this->raw ) {
+	        $this->code     = wp_remote_retrieve_response_code( $this->raw );
 	    	$this->response = json_decode( wp_remote_retrieve_body( $this->raw ) );
+        }
 	}
 
 	public function is_error() {
-		if ( isset( $this->response->error ) ) {
-			if ( is_array( $this->response->error ) && empty( $this->response->error ) )
-				return false;
-			return true;
-		}
-	}
+	    if ( in_array( $this->code, array( 500, 404 ) ) ) {
+	        return true;
+        }
 
-	public function get_response( $type = "filtered" ) {
-		if ( $type == "filtered" ) {
-			if ( $this->is_error() )
-				return $this->response->error;
-			elseif ( isset( $this->response->payload ) )
-				return $this->response->payload;
-			elseif ( isset( $this->response->success ) )
-				return $this->response->success;
-		} elseif ( $type == 'all' )
-			return $this->response;
-		elseif ( isset( $this->response->$type ) )
-			return $this->response->$type;
 		return false;
 	}
 
+	public function get_response( $type = "filtered" ) {
+		if ( "filtered" === $type ) {
+			if ( $this->is_error() ) {
+				$wp_error = new WP_Error( $this->response->code, $this->response->message, $this->response->data );
+
+				if ( isset( $this->response->additional_errors ) ) {
+					foreach( $this->response->additional_errors as $error ) {
+						$wp_error->add( $error->code, $error->message );
+					}
+				}
+
+				return $wp_error;
+            } elseif ( isset( $this->response->payload ) ) {
+				return $this->response->payload;
+            } elseif ( isset( $this->response->success ) ) {
+				return $this->response->success;
+            }
+		} elseif ( 'all' === $type ) {
+			return $this->response;
+        } elseif ( isset( $this->response->$type ) ) {
+			return $this->response->$type;
+        }
+
+		return false;
+	}
 }
 
 ?>

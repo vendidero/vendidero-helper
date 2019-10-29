@@ -2,15 +2,15 @@
 
 class VD_Product_Theme extends VD_Product {
 
-	public function __construct( $file, $product_id, $is_free = false ) {
-		parent::__construct( $file, $product_id, $is_free = false );
+	public function __construct( $file, $product_id, $args = array() ) {
+		parent::__construct( $file, $product_id, $args );
+
 		$this->theme = true;
 	}
 
 	protected function get_multisite_registered_data() {
-
 		$theme_network_wide_registered = true;
-		$registered = array();
+		$registered                    = array();
 
 		foreach( get_sites() as $key => $site ) {
 
@@ -43,24 +43,23 @@ class VD_Product_Theme extends VD_Product {
 	}
 
 	public function __get( $key ) {
-
 		$value = parent::__get( $key );
 
-		if ( $this->meta->get( $key ) )
+		if ( $this->meta->get( $key ) ) {
 			$value = $this->meta->get( $key );
+        }
 
 		return $value;
 	}
 
 	public function __isset( $key ) {
-		
 		$is = parent::__isset( $key );
 
-		if ( $this->meta->get( $key ) )
+		if ( $this->meta->get( $key ) ) {
 			$is = true;
+        }
 
 		return $is;
-
 	}
 
 	public function set_meta() {
@@ -70,7 +69,4 @@ class VD_Product_Theme extends VD_Product {
 	public function get_url() {
 		return $this->ThemeURI;
 	}
-
 }
-
-?>

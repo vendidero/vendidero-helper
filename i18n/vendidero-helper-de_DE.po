@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vendidero Helper v1.0.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-07-24 13:57+0200\n"
-"PO-Revision-Date: 2017-07-24 13:59+0200\n"
+"POT-Creation-Date: 2019-10-23 11:07+0200\n"
+"PO-Revision-Date: 2019-10-23 11:09+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: de_DE\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.0.3\n"
+"X-Generator: Poedit 2.2.4\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;"
 "_n_noop:1,2;_c,_nc:4c,1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2\n"
@@ -20,110 +20,105 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 
 # @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:31
+#: includes/class-vd-admin-license-table.php:34
 msgid "No Vendidero products found."
 msgstr "Keine Vendidero Produkte gefunden."
 
 # @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:51
+#: includes/class-vd-admin-license-table.php:55
 msgid "Product"
 msgstr "Produkt"
 
 # @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:52
+#: includes/class-vd-admin-license-table.php:56
 msgid "Version"
 msgstr "Version"
 
 # @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:53
+#: includes/class-vd-admin-license-table.php:57
 msgid "Update & Support"
-msgstr "Update & Support"
+msgstr "Updates & Support"
 
 # @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:54
+#: includes/class-vd-admin-license-table.php:58
 msgid "License Key"
 msgstr "Lizenzschlüssel"
 
 # @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:66
+#: includes/class-vd-admin-license-table.php:92
 #: screens/screen-notice-expire.php:35
 msgid "renew now"
 msgstr "jetzt verlängern"
 
+#: includes/class-vd-admin-license-table.php:116
+msgid "Newest version:"
+msgstr "Aktuelle Version:"
+
+#: includes/class-vd-admin-license-table.php:119
+msgid "Check for updates"
+msgstr "Nach Updates suchen"
+
 # @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:80
+#: includes/class-vd-admin-license-table.php:143
 msgid "Unregister"
-msgstr "deaktivieren"
+msgstr "Deaktivieren"
 
 # @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:82
-#, php-format
-msgid "Place %s license key here"
-msgstr "Lizenzschlüssel von %s einfügen"
+#: includes/class-vd-admin-license-table.php:145
+msgid "Enter license key"
+msgstr "Lizenzschlüssel eingeben"
 
-# @ vendidero-helper
-#: includes/class-vd-admin.php:128
+#: includes/class-vd-admin-license-table.php:146
+msgid "Find your license key"
+msgstr "Finde deinen Lizenzschlüssel"
+
+#: includes/class-vd-admin.php:82 includes/class-vd-admin.php:96
 #, php-format
 msgid ""
-"Your %s license doesn't seem to be registered or your Update Flatrate has "
-"expired <a style=\"margin-left: 1em\" href=\"%s\" class=\"button button-"
-"secondary\">Manage your licenses</a>"
+"Seems like your update- and support flat has expired. Please %s your license "
+"before updating."
 msgstr ""
-"Deine %s Lizenz scheint nicht registriert oder deine Update Flatrate "
-"ausgelaufen zu sein <a style=\"margin-left: 1em\" href=\"%s\" class=\"button "
-"button-secondary\">Lizenzen verwalten</a>"
+"Es scheint als wäre deine Update- und Support-Flatrate ausgelaufen. Bitte %s "
+"deine Lizenz vor dem Update."
+
+#: includes/class-vd-admin.php:82 includes/class-vd-admin.php:96
+msgid "check"
+msgstr "prüfe"
+
+#: includes/class-vd-admin.php:160
+#, php-format
+msgid "Your %s license doesn't seem to be registered. Please %s"
+msgstr "Deine %s Lizenz scheint nicht registriert zu sein. Bitte %s"
+
+#: includes/class-vd-admin.php:160 includes/class-vd-admin.php:164
+msgid "manage your licenses"
+msgstr "verwalte deine Lizenzen"
+
+#: includes/class-vd-admin.php:164
+#, php-format
+msgid "Your %s license seems to have expired. Please %s"
+msgstr ""
+"Deine Update- und Support-Flatrate für %s scheint ausgelaufen zu sein. Bitte "
+"%s"
 
 # @ vendidero-helper
-#: includes/class-vd-admin.php:141
+#: includes/class-vd-admin.php:176
 msgid "Welcome to Vendidero"
 msgstr "Willkommen bei Vendidero"
 
 # @ vendidero-helper
-#: includes/class-vd-admin.php:143
+#: includes/class-vd-admin.php:178
 msgid ""
 "Easily manage your licenses for Vendidero Products and enjoy automatic "
 "updates."
 msgstr ""
 "Verwalte deine Vendidero Lizenzen und profitiere von automatischen Updates."
 
-#: includes/class-vd-admin.php:145
-msgid ""
-"You are running a multisite installation. Please make sure to register your "
-"license for every site individually."
-msgstr ""
-"Du nutzt eine Multisite-Installation. Bitte stelle sicher, dass du für jede "
-"Installation deine Lizenz einzeln registrierst."
-
 # @ vendidero-helper
-#: includes/class-vd-admin.php:194
-#, php-format
-msgid ""
-"Sorry, but could not register %s. Please register your domain within your <a "
-"href='%s' target='_blank'>Customer Account</a>."
-msgstr ""
-"Sorry, %s konnte nicht registriert werden. Bitte aktiviere deine Domain "
-"vorab im <a href='%s' target='_blank'>Kundenbereich</a>."
-
-# @ vendidero-helper
-#: includes/class-vd-admin.php:207
+#: includes/class-vd-admin.php:247
 #, php-format
 msgid "Sorry, there was an error while unregistering %s"
-msgstr "Sorry, leider gab es beim deaktivieren der Lizenz von %s ein Problem."
-
-# @ vendidero
-#: includes/class-vd-request.php:25
-msgid "Request method not supported"
-msgstr "Anfrage wird nicht unterstützt"
-
-#: includes/class-vd-updater.php:53 includes/class-vd-updater.php:59
-#, php-format
-msgid ""
-"There is a new Version of %s but your Update Flatrate seems to have expired. "
-"Please <a href=\"%s\" target=\"_blank\">renew your Update Flatrate</a> first."
-msgstr ""
-"Es gibt eine neue Version von %s - leider ist deine Update-Flatrate "
-"ausgelaufen. Bitte <a href=\"%s\" target=\"_blank\">verlängere deine Update-"
-"Flatrate</a> um das Update installieren zu können."
+msgstr "Sorry, leider gab es beim deaktivieren der Lizenz von %s ein Problem"
 
 # @ vendidero-helper
 #: screens/screen-api-unavailable.php:7
@@ -140,7 +135,7 @@ msgstr ""
 "- bitte habe etwas Geduld und versuche es in ein paar Minuten erneut."
 
 # @ vendidero-helper
-#: screens/screen-manage-licenses.php:17
+#: screens/screen-manage-licenses.php:15
 msgid "Register Products"
 msgstr "Produkte registrieren"
 
@@ -150,12 +145,12 @@ msgid "Update & Support Flatrate expires"
 msgstr "Update & Support Flatrate läuft aus"
 
 # @ vendidero-helper
-#: screens/screen-notice-expire.php:31
+#: screens/screen-notice-expire.php:30
 msgid ""
 "It seems like the Update & Support Flatrate of one of your Vendidero "
 "products expires in a few days:"
 msgstr ""
-"Es scheint so als würde die Update & Support Flatrate für eines einer "
+"Es scheint so als würde die Update & Support Flatrate für eines deiner "
 "Vendidero Produkte in Kürze ablaufen:"
 
 # @ vendidero-helper
@@ -164,13 +159,63 @@ msgid "Hide this notice"
 msgstr "Nachricht ausblenden"
 
 # @ vendidero-helper
-#: vendidero-helper.php:71
+#: vendidero-helper.php:81
 msgid "Once per week"
 msgstr "Einmal pro Woche"
 
-#: vendidero-helper.php:110
+#: vendidero-helper.php:161
 msgid ""
 "Vendidero Helper must be network activated when in multisite environment."
 msgstr ""
 "Der Vendidero Helper muss netzwerkweit aktiviert sein wenn du eine Multisite-"
 "Installation verwendest."
+
+# @ vendidero-helper
+#~ msgid ""
+#~ "Your %s license doesn't seem to be registered. Please <a style=\"margin-"
+#~ "left: 1em\" href=\"%s\" class=\"button button-secondary\">Manage your "
+#~ "licenses</a>"
+#~ msgstr ""
+#~ "Deine %s Lizenz scheint nicht registriert zu sein <a style=\"margin-left: "
+#~ "1em\" href=\"%s\" class=\"button button-secondary\">Lizenzen verwalten</a>"
+
+# @ vendidero-helper
+#~ msgid ""
+#~ "Your %s license seems to have expired. Please <a style=\"margin-left: 1em"
+#~ "\" href=\"%s\" class=\"button button-secondary\">Manage your licenses</a>"
+#~ msgstr ""
+#~ "Die Update- und Support-Flatrate für deine %s Lizenz scheint ausgelaufen "
+#~ "zu sein. Bitte prüfe deine <a style=\"margin-left: 1em\" href=\"%s\" "
+#~ "class=\"button button-secondary\">Lizenzen</a>"
+
+# @ vendidero-helper
+#~ msgid "Place %s license key here"
+#~ msgstr "Lizenzschlüssel von %s einfügen"
+
+#~ msgid ""
+#~ "You are running a multisite installation. Please make sure to register "
+#~ "your license for every site individually."
+#~ msgstr ""
+#~ "Du nutzt eine Multisite-Installation. Bitte stelle sicher, dass du für "
+#~ "jede Installation deine Lizenz einzeln registrierst."
+
+# @ vendidero-helper
+#~ msgid ""
+#~ "Sorry, but could not register %s. Please register your domain within your "
+#~ "<a href='%s' target='_blank'>Customer Account</a>."
+#~ msgstr ""
+#~ "Sorry, %s konnte nicht registriert werden. Bitte aktiviere deine Domain "
+#~ "vorab im <a href='%s' target='_blank'>Kundenbereich</a>."
+
+# @ vendidero
+#~ msgid "Request method not supported"
+#~ msgstr "Anfrage wird nicht unterstützt"
+
+#~ msgid ""
+#~ "There is a new Version of %s but your Update Flatrate seems to have "
+#~ "expired. Please <a href=\"%s\" target=\"_blank\">renew your Update "
+#~ "Flatrate</a> first."
+#~ msgstr ""
+#~ "Es gibt eine neue Version von %s - leider ist deine Update-Flatrate "
+#~ "ausgelaufen. Bitte <a href=\"%s\" target=\"_blank\">verlängere deine "
+#~ "Update-Flatrate</a> um das Update installieren zu können."

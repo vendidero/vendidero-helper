@@ -7,79 +7,51 @@ class VD_Product {
 	public $slug;
 	public $free = false;
 	public $theme = false;
-	private $key;
 	public $meta = array();
 	public $updater = null;
+	public $blog_ids = array();
 	public $expires;
-	public $home_url;
+	public $home_url = array();
+    private $key;
 
-	public function __construct( $file, $product_id, $free = false ) {
-		$this->id = $product_id;
-		$this->file = $file;
-		$this->free = $free;
-		$this->key = '';
-		$this->expires = '';
-		$this->home_url = home_url( '/' );
-		$this->set_meta();
-		$this->slug = sanitize_title( $this->Name );
+	public function __construct( $file, $product_id, $args = array() ) {
 
-		$registered = get_option( 'vendidero_registered', array() );
+        $args = wp_parse_args( $args, array(
+            'free'     => false,
+            'blog_ids' => array(),
+        ) );
 
-		// Check all the sites for valid registrations
-		if ( is_multisite() && is_network_admin() ) {
-			$registered = $this->get_multisite_registered_data();
+        $this->id       = $product_id;
+        $this->file     = $file;
+        $this->free     = $args['free'];
+        $this->blog_ids = $args['blog_ids'];
+		$this->key      = '';
+		$this->expires  = '';
+		$this->home_url = array();
+
+		if ( ! empty( $this->blog_ids ) ) {
+
+			foreach( $this->blog_ids as $blog_id ) {
+				$this->home_url[] = VD()->sanitize_domain( get_home_url( $blog_id, '/' ) );
+			}
+		} else {
+			$this->home_url[] = VD()->sanitize_domain( home_url( '/' ) );
 		}
 
+		$this->home_url = array_values( array_unique( $this->home_url ) );
+
+        $this->set_meta();
+        $this->slug     = sanitize_title( $this->Name );
+		$registered     = $this->get_options();
+
 		if ( isset( $registered[ $this->file ] ) ) {
-			$this->key = $registered[ $this->file ]["key"];
+			$this->key     = $registered[ $this->file ]["key"];
 			$this->expires = $registered[ $this->file ]["expires"];
 		}
 	}
 
-	protected function get_multisite_registered_data() {
-
-		if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
-			require_once( ABSPATH . '/wp-admin/includes/plugin.php' );
-		}
-
-		$network_wide  = false;
-		$registered    = array();
-
-		if ( is_plugin_active_for_network( $this->file ) ) {
-			$network_wide = true;
-		}
-
-		// Search for registration data within sites - if found, escape
-		foreach( get_sites() as $key => $site ) {
-			$plugin_active = $network_wide;
-
-			if ( ! $network_wide ) {
-				$plugins = get_blog_option( $site->blog_id, 'active_plugins', array() );
-
-				if ( in_array( $this->file, $plugins ) ) {
-					$plugin_active = true;
-				}
-			}
-
-			// Do only check license if plugin is activated
-			if ( $plugin_active ) {
-
-				$site_registered = get_blog_option( $site->blog_id, 'vendidero_registered', array() );
-
-				if ( isset( $site_registered[ $this->file ] ) ) {
-					$registered     = $site_registered;
-					$this->home_url = get_home_url( $site->blog_id, '/' );
-
-					break;
-				}
-			}
-		}
-
-		return $registered;
-	}
-
 	public function set_meta() {
-		$this->meta = VD()->plugins[$this->file];
+		$this->meta = VD()->plugins[ $this->file ];
 	}
 
 	public function __get( $key ) {
@@ -92,6 +64,10 @@ class VD_Product {
 
 	public function is_theme() {
 		return $this->theme;
+	}
+
+	public function get_blog_ids() {
+		return $this->blog_ids;
 	}
 
 	public function get_url() {
@@ -113,63 +89,98 @@ class VD_Product {
 	public function refresh_expiration_date() {
 		if ( $this->is_registered() ) {
 			$expire = VD()->api->expiration_check( $this );
-			if ( $expire )
+
+			if ( ! is_wp_error( $expire ) ) {
                 $this->set_expiration_date( $expire );
+            }
+
+            return $expire;
 		}
+
+		return false;
 	}
 
 	public function get_expiration_date( $format = 'd.m.Y' ) {
-		if ( ! $this->is_registered() || empty( $this->expires ) )
+		if ( ! $this->is_registered() || empty( $this->expires ) ) {
 			return false;
+        }
+
 		$date = $this->expires;
+
 		return ( ! $format ? $date : date( $format, strtotime( $date ) ) );
 	}
 
 	public function has_expired() {
-		if ( ! $this->is_registered() || empty( $this->expires ) )
+		if ( ! $this->is_registered() || empty( $this->expires ) ) {
 			return false;
-        if ( ( strtotime( $this->expires ) < time() ) ) 
+        }
+
+        if ( ( strtotime( $this->expires ) < time() ) ) {
             return true;
+        }
+
         return false;
 	}
 
+	protected function get_options() {
+		if( is_multisite() ) {
+			return get_site_option( 'vendidero_registered', array() );
+		} else {
+			return get_option( 'vendidero_registered', array() );
+		}
+	}
+
+	protected function update_options( $data ) {
+		if( is_multisite() ) {
+			return update_site_option( 'vendidero_registered', $data );
+		} else {
+			return update_option( 'vendidero_registered', $data );
+		}
+	}
+
 	public function register( $key, $expires = '' ) {
-		$registered = get_option( 'vendidero_registered', array() );
+		$registered = $this->get_options();
+
 		if ( ! isset( $registered[ $this->file ] ) ) {
 			$registered[ $this->file ] = array( "key" => md5( $key ), "expires" => $expires );
-			$this->expires = $registered[ $this->file ]["expires"];
-			$this->key = $registered[ $this->file ]["key"];
+			$this->expires             = $registered[ $this->file ]["expires"];
+			$this->key                 = $registered[ $this->file ]["key"];
 		}
-		update_option( 'vendidero_registered', $registered );
+
+		$this->update_options( $registered );
 	}
 
 	public function set_expiration_date( $expires ) {
-		$registered = get_option( 'vendidero_registered', array() );
+		$registered = $this->get_options();
+
 		if ( isset( $registered[ $this->file ] ) ) {
 			$registered[ $this->file ]["expires"] = $expires;
-			$this->expires = $registered[ $this->file ]["expires"];
+			$this->expires                        = $registered[ $this->file ]["expires"];
 		}
-		update_option( 'vendidero_registered', $registered );
+
+		$this->update_options( $registered );
 	}
 
 	public function unregister() {
-		
-		$registered = get_option( 'vendidero_registered', array() );
+		$registered = $this->get_options();
 		
 		if ( isset( $registered[ $this->file ] ) ) {
 			unset( $registered[ $this->file ] );
-			$this->key = '';
+
+			$this->key     = '';
 			$this->expires = '';
 		}
 
 		if ( ! empty( $registered ) ) {
 			foreach( $registered as $key => $val ) {
-				if ( is_numeric( $key ) )
+
+				if ( is_numeric( $key ) ) {
 					unset( $registered[ $key ] );
+                }
 			}
 		}
 
-		update_option( 'vendidero_registered', array_filter( $registered ) );
+		$this->update_options( array_filter( $registered ) );
 	}
 
 	public function get_home_url() {
@@ -177,11 +188,14 @@ class VD_Product {
 	}
 
 	public function get_key() {
-		if ( ! $this->is_registered() )
+		if ( ! $this->is_registered() ) {
 			return false;
-		if ( $this->is_free() )
+        }
+
+        if ( $this->is_free() ) {
 			return '';
+        }
+
 		return $this->key;
 	}
-
 }
