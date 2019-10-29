@@ -143,7 +143,7 @@ class VD_Admin_License_Table extends WP_List_Table {
             $response       = '<a href="' . esc_url( $unregister_url ) . '">' . __( 'Unregister', 'vendidero-helper' ) . '</a>' . "\n";
         } else {
             $response .= '<input name="license_keys[' . esc_attr( $item->file ) . ']" id="license_keys-' . esc_attr( $item->file ) . '" type="text" value="" style="width: 100%" aria-required="true" placeholder="' . esc_attr( __( 'Enter license key', 'vendidero-helper' ) ) . '" /><br/>';
-            $response .= '<a href="https://vendidero.de/dashboard/licenses/" target="_blank">' . __( 'Find your license key', 'vendidero-helper' ) . '</a>';
+            $response .= '<a href="https://vendidero.de/dashboard/products/" target="_blank">' . __( 'Find your license key', 'vendidero-helper' ) . '</a>';
         }
 
         return $response;
