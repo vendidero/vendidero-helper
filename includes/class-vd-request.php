@@ -18,7 +18,8 @@ class VD_Request {
 			$this->product          = $product;
 			$default_args['id']     = $product->id;
             $default_args['key']    = ( $product->is_registered() ? $product->get_key() : false );
-            $default_args['domain'] = array_map( 'esc_url', $product->get_home_url() );
+            $domain                 = $product->get_home_url();
+            $default_args['domain'] = is_array( $domain ) ? array_map( 'esc_url', $product->get_home_url() ) : esc_url( $domain );
 		} else {
             $default_args['domain'] = esc_url( home_url( '/' ) );
 		}
@@ -82,16 +83,22 @@ class VD_Request {
 	public function get_response( $type = "filtered" ) {
 		if ( "filtered" === $type ) {
 			if ( $this->is_error() ) {
-				$wp_error = new WP_Error( $this->response->code, $this->response->message, $this->response->data );
 
-				if ( isset( $this->response->additional_errors ) ) {
-					foreach( $this->response->additional_errors as $error ) {
-						$wp_error->add( $error->code, $error->message );
+				if ( isset( $this->response->code ) ) {
+					$wp_error = new WP_Error( $this->response->code, $this->response->message, $this->response->data );
+
+					if ( isset( $this->response->additional_errors ) ) {
+						foreach( $this->response->additional_errors as $error ) {
+							$wp_error->add( $error->code, $error->message );
+						}
 					}
+				} else {
+					$wp_error = new WP_Error( 500, __( 'Error while requesting vendidero helper data.', 'vendidero-helper' ) );
 				}
 
 				return $wp_error;
-            } elseif ( isset( $this->response->payload ) ) {
+
+			} elseif ( isset( $this->response->payload ) ) {
 				return $this->response->payload;
             } elseif ( isset( $this->response->success ) ) {
 				return $this->response->success;
