@@ -1,0 +1,16 @@
+{
+    "name": "vendidero/vendidero-helper",
+    "type": "wordpress-plugin",
+    "description": "Will help vendidero users to manage their licenses and receive automatic updates",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "vendidero",
+            "email": "info@vendidero.de"
+        }
+    ],
+    "require": {
+        "composer/installers": "~1.0"
+    },
+    "minimum-stability": "dev"
+}
