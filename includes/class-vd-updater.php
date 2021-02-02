@@ -29,7 +29,7 @@ class VD_Updater {
 
 	public function update_check( $transient ) {
 		$request = VD()->api->update_check( $this->product, $this->product->get_key() );
-		
+
 		if ( $request->is_error() ) {
 			$error = $request->get_response();
 
@@ -41,9 +41,8 @@ class VD_Updater {
             }
 			
 			if ( $request->get_response( "payload" ) ) {
-
 				$payload = $request->get_response( "payload" );
-				
+
 				// Do only add transient if remote version is newer than local version
 				if ( version_compare( $payload->new_version, $this->product->Version, "<=" ) ) {
 					return $transient;
@@ -51,11 +50,11 @@ class VD_Updater {
 				
 				// Set plugin/theme file (seems to be necessary as for 4.2)
 				if ( ! $this->product->is_theme() ) {
-					$payload->plugin           = $this->product->file;
-					$payload->slug             = sanitize_title( $this->product->Name );
+					$payload->plugin = $this->product->file;
+					$payload->slug   = sanitize_title( $this->product->Name );
 				} else {
 					$payload = (array) $payload;
-					$payload['theme']            = $this->product->file;
+					$payload['theme'] = $this->product->file;
 				}
 
 				$transient->response[ ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file ) ] = $payload;

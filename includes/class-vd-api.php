@@ -27,7 +27,7 @@ class VD_API {
 	}
 
 	public function info( VD_Product $product ) {
-		$request = new VD_Request( "version/{$product->id}/latest/info", $product );
+		$request = new VD_Request( "releases/{$product->id}/latest/info", $product );
 
 		return ( ! $request->is_error() ? $request->get_response() : false );
 	}
@@ -39,7 +39,7 @@ class VD_API {
 	}
 
 	public function update_check( VD_Product $product, $key = '' ) {
-		$request = new VD_Request( "version/{$product->id}/latest", $product, array( 'key' => $key, 'version' => $product->Version ) );
+		$request = new VD_Request( "releases/{$product->id}/latest", $product, array( 'key' => $key, 'version' => $product->Version ) );
 
 		return $request;
 	}
