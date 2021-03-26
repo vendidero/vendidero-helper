@@ -52,6 +52,11 @@ class VD_Updater {
 				if ( ! $this->product->is_theme() ) {
 					$payload->plugin = $this->product->file;
 					$payload->slug   = sanitize_title( $this->product->Name );
+
+					// update-core.php expects icons to be formatted as array (see wp-admin/update-core.php:473
+					if ( isset( $payload->custom_icons ) ) {
+						$payload->icons = (array) $payload->custom_icons;
+					}
 				} else {
 					$payload = (array) $payload;
 					$payload['theme'] = $this->product->file;
