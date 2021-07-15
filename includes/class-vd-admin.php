@@ -235,6 +235,8 @@ class VD_Admin {
 		if ( ! empty( $errors ) ) {
 			$this->add_notice( $errors, 'error' );
         }
+
+		VD()->api->flush_update_cache();
 	}
 
 	public function process_unregister() {
@@ -251,6 +253,8 @@ class VD_Admin {
 		if ( ! empty( $errors ) ) {
 			$this->add_notice( $errors, 'error' );
         }
+
+		VD()->api->flush_update_cache();
 	}
 
 	public function add_notice( $msg = array(), $type = 'error' ) {

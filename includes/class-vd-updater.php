@@ -8,7 +8,6 @@ class VD_Updater {
 	public $added_upgrade_notice = false;
 
 	public function __construct( VD_Product $product ) {
-		
 		$this->product = $product;
 		
 		// Check For Updates
@@ -17,7 +16,6 @@ class VD_Updater {
 	}
 
 	public function ssl_verify( $args, $url ) {
-
 		if ( is_admin() ) {
 			if ( apply_filters( 'vd_helper_disable_ssl_verify', false ) && $url == VD()->get_api_url() ) {
 				$args['sslverify'] = false;
@@ -28,21 +26,18 @@ class VD_Updater {
 	}
 
 	public function update_check( $transient ) {
-		$request = VD()->api->update_check( $this->product, $this->product->get_key() );
+		$data = VD()->api->update_check( $this->product, $this->product->get_key() );
 		
-		if ( $request->is_error() ) {
-			$error = $request->get_response();
-
-			$this->add_notice( $error->get_error_messages( $error->get_error_code() ) );
+		if ( ! empty( $data['errors'] ) ) {
+			$this->add_notice( $data['errors'] );
 		} else {
 		
-			if ( $request->get_response( "notice" ) ) {
-				$this->add_notice( (array) $request->get_response( "notice" ), 'error' );
+			if ( ! empty( $data['notices'] ) ) {
+				$this->add_notice( $data['notices'], 'error' );
             }
 			
-			if ( $request->get_response( "payload" ) ) {
-
-				$payload = $request->get_response( "payload" );
+			if ( ! empty( $data['payload'] ) ) {
+				$payload = $data['payload'];
 				
 				// Do only add transient if remote version is newer than local version
 				if ( version_compare( $payload->new_version, $this->product->Version, "<=" ) ) {

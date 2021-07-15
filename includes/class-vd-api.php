@@ -38,10 +38,61 @@ class VD_API {
 		return ( ! $request->is_error() ? $request->get_response( "expiration_date" ) : $request->get_response() );
 	}
 
-	public function update_check( VD_Product $product, $key = '' ) {
+	public function flush_update_cache() {
+		foreach( VD()->get_products() as $product ) {
+			delete_transient( "_vendidero_helper_updates_{$product->id}" );
+		}
+	}
+
+	private function _update_check( VD_Product $product, $key = '' ) {
+		$cache_key = "_vendidero_helper_updates_{$product->id}";
+		$data      = get_transient( $cache_key );
+
+		if ( false !== $data && ! empty( $_GET['force-check'] ) ) {
+			// Wait at least 1 minute between multiple forced version check requests.
+			$timeout          = MINUTE_IN_SECONDS;
+			$time_not_changed = ! empty( $data['updated'] ) && $timeout > ( time() - $data['updated'] );
+
+			if ( ! $time_not_changed ) {
+				delete_transient( $cache_key );
+				$data = false;
+			}
+		}
+
+		if ( false !== $data ) {
+			return $data;
+		}
+
+		$data = array(
+			'updated' => time(),
+			'payload' => array(),
+			'errors'  => array(),
+			'notices' => array()
+		);
+
 		$request = new VD_Request( "version/{$product->id}/latest", $product, array( 'key' => $key, 'version' => $product->Version ) );
 
-		return $request;
+		if ( $request->is_error() ) {
+			$error = $request->get_response();
+
+			foreach( $error->get_error_messages( $error->get_error_code() ) as $msg ) {
+				$data['errors'][] = $msg;
+			}
+		} else {
+			if ( $request->get_response( "notice" ) ) {
+				$data['notices'] = (array) $request->get_response( "notice" );
+			}
+
+			$data['payload'] = $request->get_response( "payload" );
+		}
+
+		set_transient( $cache_key, $data, 6 * HOUR_IN_SECONDS );
+
+		return $data;
+	}
+
+	public function update_check( VD_Product $product, $key = '' ) {
+		return $this->_update_check( $product, $key );
 	}
 
 	public function generator_version_check( VD_Product $product, $generator ) {
