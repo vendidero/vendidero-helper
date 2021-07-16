@@ -3,7 +3,7 @@
  * Plugin Name: Vendidero Helper
  * Plugin URI: http://vendidero.de
  * Description: Will help vendidero users to manage their licenses and receive automatic updates
- * Version: 1.3.0
+ * Version: 2.0.0
  * Author: Vendidero
  * Author URI: http://vendidero.de
  * License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -22,7 +22,7 @@ final class Vendidero_Helper {
      */
     protected static $_instance = null;
 
-    public $version     = '1.3.0';
+    public $version     = '2.0.0';
 
     /**
      * @var VD_API $api
@@ -31,10 +31,11 @@ final class Vendidero_Helper {
     public $plugins     = array();
     public $themes      = array();
 
-    private $debug_mode = false;
-    private $token      = 'vendidero-api';
-    private $api_url    = 'https://vendidero.de/wp-json/vd/v1/';
-    private $products   = array();
+    private $debug_mode       = false;
+    private $token            = 'vendidero-api';
+    private $api_url          = 'https://vendidero.de/wp-json/vd/v1/';
+	private $download_api_url = 'https://download.vendidero.de/api/v1/';
+    private $products         = array();
 
     /**
      * Main Vendidero Instance
@@ -104,11 +105,53 @@ final class Vendidero_Helper {
             add_filter( 'http_request_host_is_external', array( $this, 'allow_local_urls' ) );
             add_filter( 'http_request_args', array( $this, 'disable_ssl_verify' ), 10, 1 );
         }
+
+	    add_action( 'upgrader_pre_download', array( $this, 'block_expired_updates' ), 50, 2 );
+    }
+
+	/**
+	 * Hooked into the upgrader_pre_download filter in order to better handle error messaging around expired
+	 * plugin updates. Initially we were using an empty string, but the error message that no_package
+	 * results in does not fit the cause.
+	 *
+	 * @since 2.0.0
+	 * @param bool   $reply Holds the current filtered response.
+	 * @param string $package The path to the package file for the update.
+	 * @return false|WP_Error False to proceed with the update as normal, anything else to be returned instead of updating.
+	 */
+    public function block_expired_updates( $reply, $package ) {
+		// Don't override a reply that was set already.
+	    if ( false !== $reply ) {
+		    return $reply;
+	    }
+
+	    // Only for packages with expired subscriptions.
+	    if ( 0 !== strpos( $package, 'vendidero-expired-' ) ) {
+		    return $reply;
+	    }
+
+	    $product_id = absint( str_replace( 'vendidero-expired-', '', $package ) );
+
+	    if ( $product = $this->get_product_by_id( $product_id ) ) {
+		    return new WP_Error(
+			    'vendidero_expired',
+			    sprintf(
+			        // translators: %s: Renewal url.
+				    __( 'Your update- and support-flat has expired. Please <a href="%s" target="_blank">renew</a> your license before updating.', 'vendidero-helper' ),
+				    esc_url( $product->get_renewal_url() )
+			    )
+		    );
+	    } else {
+		    return new WP_Error(
+			    'vendidero_expired',
+			     __( 'Your update- and support-flat has expired. Please renew your license before updating.', 'vendidero-helper' )
+		    );
+	    }
     }
 
     public function adjust_signature_url( $signature_url, $url ) {
-        if ( strpos( $url, $this->api_url ) !== false ) {
-            $signature_url = str_replace( '/latest', '/latest.sig', $url );
+        if ( strpos( $url, $this->download_api_url ) !== false ) {
+            $signature_url = str_replace( 'latest/download', 'latest/downloadSignature', $url );
         }
 
         return $signature_url;
@@ -121,7 +164,7 @@ final class Vendidero_Helper {
     }
 
     public function add_signature_hosts( $hosts ) {
-        $url     = @parse_url( $this->api_url );
+        $url     = @parse_url( $this->download_api_url );
         $hosts[] = $url['host'];
 
         return $hosts;
@@ -443,6 +486,11 @@ final class Vendidero_Helper {
         return $response;
     }
 
+	/**
+	 * @param bool $show_free
+	 *
+	 * @return VD_Product[]
+	 */
     public function get_products( $show_free = true ) {
         $products = $this->products;
 
@@ -457,13 +505,37 @@ final class Vendidero_Helper {
         return $products;
     }
 
+	/**
+	 * @param $key
+	 *
+	 * @return false|VD_Product
+	 */
     public function get_product( $key ) {
         return ( isset( $this->products[ $key ] ) ? $this->products[ $key ] : false );
     }
 
+	/**
+	 * @param $id
+	 *
+	 * @return false|VD_Product
+	 */
+	public function get_product_by_id( $id ) {
+		foreach( $this->get_products() as $key => $product ) {
+			if ( $product->id == $id ) {
+				return $product;
+			}
+		}
+
+		return false;
+	}
+
     public function get_api_url() {
         return $this->api_url;
     }
+
+	public function get_download_api_url() {
+		return $this->download_api_url;
+	}
 
     public function get_token() {
         return $this->token;

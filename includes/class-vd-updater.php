@@ -34,7 +34,7 @@ class VD_Updater {
 		
 			if ( ! empty( $data['notices'] ) ) {
 				$this->add_notice( $data['notices'], 'error' );
-            }
+      }
 			
 			if ( ! empty( $data['payload'] ) ) {
 				$payload = $data['payload'];
@@ -42,15 +42,20 @@ class VD_Updater {
 				// Do only add transient if remote version is newer than local version
 				if ( version_compare( $payload->new_version, $this->product->Version, "<=" ) ) {
 					return $transient;
-                }
+        }
 				
 				// Set plugin/theme file (seems to be necessary as for 4.2)
 				if ( ! $this->product->is_theme() ) {
-					$payload->plugin           = $this->product->file;
-					$payload->slug             = sanitize_title( $this->product->Name );
+					$payload->plugin = $this->product->file;
+					$payload->slug   = sanitize_title( $this->product->Name );
+
+					// update-core.php expects icons to be formatted as array (see wp-admin/update-core.php:473
+					if ( isset( $payload->custom_icons ) ) {
+						$payload->icons = (array) $payload->custom_icons;
+					}
 				} else {
 					$payload = (array) $payload;
-					$payload['theme']            = $this->product->file;
+					$payload['theme'] = $this->product->file;
 				}
 
 				$transient->response[ ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file ) ] = $payload;

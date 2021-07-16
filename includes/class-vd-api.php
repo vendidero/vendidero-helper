@@ -27,7 +27,7 @@ class VD_API {
 	}
 
 	public function info( VD_Product $product ) {
-		$request = new VD_Request( "version/{$product->id}/latest/info", $product );
+		$request = new VD_Request( "releases/{$product->id}/latest/info", $product );
 
 		return ( ! $request->is_error() ? $request->get_response() : false );
 	}
@@ -69,8 +69,8 @@ class VD_API {
 			'errors'  => array(),
 			'notices' => array()
 		);
-
-		$request = new VD_Request( "version/{$product->id}/latest", $product, array( 'key' => $key, 'version' => $product->Version ) );
+    
+		$request = new VD_Request( "releases/{$product->id}/latest", $product, array( 'key' => $key, 'version' => $product->Version ) );
 
 		if ( $request->is_error() ) {
 			$error = $request->get_response();

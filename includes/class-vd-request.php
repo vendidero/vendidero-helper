@@ -35,7 +35,13 @@ class VD_Request {
 	}
 
 	private function get_endpoint() {
-	    return VD()->get_api_url() . $this->args['request'];
+		$api_url = VD()->get_api_url();
+
+		if ( strpos( $this->args['request'], 'releases/' ) !== false ) {
+			$api_url = VD()->get_download_api_url();
+		}
+
+	    return trailingslashit( $api_url ) . $this->args['request'];
     }
 
 	public function do_request() {
@@ -52,7 +58,6 @@ class VD_Request {
                 'sslverify'   => false
             ) );
         } else {
-
             $this->raw = wp_remote_post( $this->get_endpoint(), array(
                 'method'      => 'POST',
                 'redirection' => 5,
@@ -72,7 +77,7 @@ class VD_Request {
 	}
 
 	public function is_error() {
-	    if ( in_array( $this->code, array( 500, 404 ) ) ) {
+	    if ( in_array( $this->code, array( 500, 404, 429 ) ) ) {
 	        return true;
         }
 
