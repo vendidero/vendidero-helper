@@ -3,10 +3,12 @@
  * Plugin Name: Vendidero Helper
  * Plugin URI: http://vendidero.de
  * Description: Will help vendidero users to manage their licenses and receive automatic updates
- * Version: 2.0.0
+ * Version: 2.0.1
  * Author: Vendidero
  * Author URI: http://vendidero.de
  * License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * Requires at least: 3.8
+ * Tested up to: 5.8
  *
  * Text Domain: vendidero-helper
  * Domain Path: /i18n/
@@ -22,7 +24,7 @@ final class Vendidero_Helper {
      */
     protected static $_instance = null;
 
-    public $version     = '2.0.0';
+    public $version     = '2.0.1';
 
     /**
      * @var VD_API $api
