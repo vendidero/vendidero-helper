@@ -45,11 +45,11 @@ class VD_Request {
     }
 
 	public function do_request() {
+
 	    if ( 'GET' === $this->args['method'] ) {
 	        $url = add_query_arg( $this->args, $this->get_endpoint() );
 
             $this->raw = wp_remote_get( $url, array(
-                'timeout'     => 45,
                 'redirection' => 5,
                 'httpversion' => '1.0',
                 'blocking'    => true,
@@ -60,7 +60,6 @@ class VD_Request {
         } else {
             $this->raw = wp_remote_post( $this->get_endpoint(), array(
                 'method'      => 'POST',
-                'timeout'     => 45,
                 'redirection' => 5,
                 'httpversion' => '1.0',
                 'blocking'    => true,

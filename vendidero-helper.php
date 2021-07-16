@@ -496,7 +496,6 @@ final class Vendidero_Helper {
 
         if ( ! $show_free ) {
             foreach ( $this->products as $key => $product ) {
-
                 if ( $product->free ) {
                     unset( $products[ $key ] );
                 }
