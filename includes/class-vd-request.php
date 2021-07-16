@@ -51,7 +51,6 @@ class VD_Request {
 
             $this->raw = wp_remote_get( $url, array(
                 'redirection' => 5,
-                'httpversion' => '1.0',
                 'blocking'    => true,
                 'headers'     => array( 'user-agent' => 'Vendidero/' . VD()->version ),
                 'cookies'     => array(),
@@ -61,7 +60,6 @@ class VD_Request {
             $this->raw = wp_remote_post( $this->get_endpoint(), array(
                 'method'      => 'POST',
                 'redirection' => 5,
-                'httpversion' => '1.0',
                 'blocking'    => true,
                 'headers'     => array( 'user-agent' => 'Vendidero/' . VD()->version ),
                 'body'        => $this->args,

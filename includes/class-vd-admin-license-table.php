@@ -19,9 +19,9 @@ class VD_Admin_License_Table extends WP_List_Table {
         global $status, $page;
 
         $args = array(
-            'singular'  => 'license',
-            'plural'    => 'licenses',
-            'ajax'      => false
+            'singular' => 'license',
+            'plural'   => 'licenses',
+            'ajax'     => false
         );
 
         $this->data = array();
@@ -31,7 +31,7 @@ class VD_Admin_License_Table extends WP_List_Table {
     }
 
     public function no_items() {
-        echo wpautop( __( 'No Vendidero products found.', 'vendidero-helper' ) );
+        echo wpautop( __( 'No vendidero products found.', 'vendidero-helper' ) );
     }
 
     public function column_default( $item, $column_name ) {

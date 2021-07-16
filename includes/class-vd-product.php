@@ -30,7 +30,6 @@ class VD_Product {
 		$this->home_url = array();
 
 		if ( ! empty( $this->blog_ids ) ) {
-
 			foreach( $this->blog_ids as $blog_id ) {
 				$this->home_url[] = VD()->sanitize_domain( get_home_url( $blog_id, '/' ) );
 			}
@@ -86,9 +85,9 @@ class VD_Product {
 		return ( ( ! empty( $this->key ) || $this->is_free() ) ? true : false );
 	}
 
-	public function refresh_expiration_date() {
+	public function refresh_expiration_date( $force = false ) {
 		if ( $this->is_registered() ) {
-			$expire = VD()->api->expiration_check( $this );
+			$expire = VD()->api->expiration_check( $this, $force );
 
 			if ( ! is_wp_error( $expire ) ) {
                 $this->set_expiration_date( $expire );
@@ -98,6 +97,12 @@ class VD_Product {
 		}
 
 		return false;
+	}
+
+	public function flush_api_cache() {
+		delete_transient( "_vendidero_helper_updates_{$this->id}" );
+		delete_transient( "_vendidero_helper_update_info_{$this->id}" );
+		delete_transient( "_vendidero_helper_expiry_{$this->id}" );
 	}
 
 	public function get_expiration_date( $format = 'd.m.Y' ) {

@@ -27,7 +27,7 @@ if ( ! $show_notice ) {
 
 <div class="error fade">
 	<h3><?php _e( 'Update & Support Flatrate expires', 'vendidero-helper' ); ?></h3>
-	<p><?php _e( 'It seems like the Update & Support Flatrate of one of your Vendidero products expires in a few days:', 'vendidero-helper' ); ?></p>
+	<p><?php _e( 'It seems like the Update & Support Flatrate of one of your vendidero products expires in a few days:', 'vendidero-helper' ); ?></p>
 
     <?php foreach( $products as $key => $val ) : $product = VD()->get_product( $key ); ?>
 		<p><strong><?php echo $product->Name; ?></strong></p>

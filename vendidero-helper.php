@@ -73,6 +73,18 @@ final class Vendidero_Helper {
         }
 
         add_action( 'vendidero_cron', array( $this, 'expire_cron' ), 0 );
+
+	    add_action( 'deactivated_plugin', array( $this, 'plugin_action' ) );
+	    add_action( 'activated_plugin', array( $this, 'plugin_action' ) );
+    }
+
+    public function plugin_action( $filename ) {
+    	foreach( $this->get_products() as $product ) {
+    		if ( $product->file === $filename ) {
+    			$product->flush_api_cache();
+    			break;
+		    }
+ 	    }
     }
 
     public function set_weekly_schedule( $schedules ) {
@@ -200,7 +212,7 @@ final class Vendidero_Helper {
     }
 
 	public function admin_notice_require_network_activation() {
-		echo '<div class="error"><p>' . __( 'Vendidero Helper must be network activated when in multisite environment.', 'vendidero-helper' ) . '</p></div>';
+		echo '<div class="error"><p>' . __( 'vendidero Helper must be network activated when in multisite environment.', 'vendidero-helper' ) . '</p></div>';
 	}
 
     public function expire_cron() {
@@ -217,7 +229,7 @@ final class Vendidero_Helper {
                 }
 
                 // Refresh expiration date
-                $product->refresh_expiration_date();
+                $product->refresh_expiration_date( true );
                 
                 if ( $expire = $product->get_expiration_date( false ) ) {
                     $diff   = VD()->get_date_diff( date( 'Y-m-d' ), $expire );
@@ -225,6 +237,9 @@ final class Vendidero_Helper {
 
                     if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
                         $notice[ $key ] = true;
+
+	                    delete_transient( "_vendidero_helper_updates_{$product->id}" );
+	                    delete_transient( "_vendidero_helper_update_info_{$product->id}" );
                     }
 
                     update_option( 'vendidero_notice_expire', $notice );
@@ -291,7 +306,6 @@ final class Vendidero_Helper {
         $themes = wp_get_themes();
         
         if ( ! empty( $themes ) ) {
-
             foreach ( $themes as $theme ) {
                 $this->themes[ basename( $theme->__get( 'stylesheet_dir' ) ) . '/style.css' ] = $theme;
             }

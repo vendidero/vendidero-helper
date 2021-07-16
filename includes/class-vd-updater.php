@@ -31,10 +31,9 @@ class VD_Updater {
 		if ( ! empty( $data['errors'] ) ) {
 			$this->add_notice( $data['errors'] );
 		} else {
-		
 			if ( ! empty( $data['notices'] ) ) {
 				$this->add_notice( $data['notices'], 'error' );
-      }
+            }
 			
 			if ( ! empty( $data['payload'] ) ) {
 				$payload = $data['payload'];
@@ -42,7 +41,7 @@ class VD_Updater {
 				// Do only add transient if remote version is newer than local version
 				if ( version_compare( $payload->new_version, $this->product->Version, "<=" ) ) {
 					return $transient;
-        }
+                }
 				
 				// Set plugin/theme file (seems to be necessary as for 4.2)
 				if ( ! $this->product->is_theme() ) {
@@ -85,7 +84,5 @@ class VD_Updater {
 			echo '</p></div>';
 		}
 	}
-
 }
-
 ?>
