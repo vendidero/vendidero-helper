@@ -38,11 +38,6 @@ class VD_Updater {
 			if ( ! empty( $data['payload'] ) ) {
 				$payload = $data['payload'];
 				
-				// Do only add transient if remote version is newer than local version
-				if ( version_compare( $payload->new_version, $this->product->Version, "<=" ) ) {
-					return $transient;
-                }
-				
 				// Set plugin/theme file (seems to be necessary as for 4.2)
 				if ( ! $this->product->is_theme() ) {
 					$payload->plugin = $this->product->file;
@@ -57,7 +52,16 @@ class VD_Updater {
 					$payload['theme'] = $this->product->file;
 				}
 
-				$transient->response[ ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file ) ] = $payload;
+				// Do only add transient if remote version is newer than local version
+				if ( version_compare( $payload->new_version, $this->product->Version, "<=" ) ) {
+					if ( ! isset( $transient->no_update ) ) {
+						$transient->no_update = array();
+					}
+
+					$transient->no_update[ ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file ) ] = $payload;
+				} else {
+					$transient->response[ ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file ) ] = $payload;
+				}
 			}
 		}
 
