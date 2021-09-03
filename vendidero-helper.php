@@ -78,7 +78,19 @@ final class Vendidero_Helper {
 
 	    add_action( 'deactivated_plugin', array( $this, 'plugin_action' ) );
 	    add_action( 'activated_plugin', array( $this, 'plugin_action' ) );
+
+	    add_action( 'http_request_args', array( $this, 'ssl_verify' ), 10, 2 );
     }
+
+	public function ssl_verify( $args, $url ) {
+		if ( is_admin() ) {
+			if ( apply_filters( 'vd_helper_disable_ssl_verify', false ) && $url == VD()->get_api_url() ) {
+				$args['sslverify'] = false;
+			}
+		}
+
+		return $args;
+	}
 
     public function plugin_action( $filename ) {
     	foreach( $this->get_products() as $product ) {

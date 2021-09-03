@@ -12,17 +12,6 @@ class VD_Updater {
 		
 		// Check For Updates
 		add_filter( 'pre_set_site_transient_update_' . ( $this->product->is_theme() ? 'themes' : 'plugins' ), array( $this, 'update_check' ) );
-		add_action( 'http_request_args', array( $this, 'ssl_verify' ), 10, 2 );
-	}
-
-	public function ssl_verify( $args, $url ) {
-		if ( is_admin() ) {
-			if ( apply_filters( 'vd_helper_disable_ssl_verify', false ) && $url == VD()->get_api_url() ) {
-				$args['sslverify'] = false;
-			}
-		}
-
-		return $args; 
 	}
 
 	public function update_check( $transient ) {
@@ -34,6 +23,8 @@ class VD_Updater {
 			if ( ! empty( $data['notices'] ) ) {
 				$this->add_notice( $data['notices'], 'error' );
             }
+
+			$filename = ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file );
 			
 			if ( ! empty( $data['payload'] ) ) {
 				$payload = $data['payload'];
@@ -52,15 +43,15 @@ class VD_Updater {
 					$payload['theme'] = $this->product->file;
 				}
 
-				// Do only add transient if remote version is newer than local version
 				if ( version_compare( $payload->new_version, $this->product->Version, "<=" ) ) {
 					if ( ! isset( $transient->no_update ) ) {
 						$transient->no_update = array();
 					}
-
-					$transient->no_update[ ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file ) ] = $payload;
+					$transient->no_update[ $filename ] = $payload;
+					unset( $transient->response[ $filename ] );
 				} else {
-					$transient->response[ ( ( $this->product->is_theme() ) ? $this->product->Name : $this->product->file ) ] = $payload;
+					$transient->response[ $filename ] = $payload;
+					unset( $transient->no_update[ $filename ] );
 				}
 			}
 		}
