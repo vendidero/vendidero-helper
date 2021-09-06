@@ -75,11 +75,15 @@ final class Vendidero_Helper {
         }
 
         add_action( 'vendidero_cron', array( $this, 'expire_cron' ), 0 );
-
 	    add_action( 'deactivated_plugin', array( $this, 'plugin_action' ) );
 	    add_action( 'activated_plugin', array( $this, 'plugin_action' ) );
-
 	    add_action( 'http_request_args', array( $this, 'ssl_verify' ), 10, 2 );
+
+	    /**
+	     * Make sure that API is setup during auto-updates too
+	     */
+	    add_action( 'wp_maybe_auto_update', array( $this, 'init' ), 1 );
+	    add_action( 'wp_maybe_auto_update', array( $this, 'load' ), 2 );
     }
 
 	public function ssl_verify( $args, $url ) {
@@ -207,7 +211,7 @@ final class Vendidero_Helper {
 
     public function load() {
 	    // If multisite, plugin must be network activated. First make sure the is_plugin_active_for_network function exists
-	    if( is_multisite() && ! is_network_admin() ) {
+	    if ( is_multisite() && ! is_network_admin() ) {
 		    remove_action( 'admin_notices', 'vendidero_helper_notice' );
 
 		    if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
@@ -475,7 +479,6 @@ final class Vendidero_Helper {
     public function update_products() {
         if ( ! empty( $this->products ) ) {
             foreach ( $this->products as $key => $product ) {
-
                 if ( $product->is_registered() ) {
                     $product->updater = new VD_Updater( $product );
                 }
