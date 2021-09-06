@@ -55,7 +55,6 @@ final class Vendidero_Helper {
     }
 
     public function __construct() {
-
         // Auto-load classes on demand
         if ( function_exists( "__autoload" ) ) {
             spl_autoload_register( "__autoload" );
@@ -82,8 +81,16 @@ final class Vendidero_Helper {
 	    /**
 	     * Make sure that API is setup during auto-updates too
 	     */
-	    add_action( 'wp_maybe_auto_update', array( $this, 'init' ), 1 );
-	    add_action( 'wp_maybe_auto_update', array( $this, 'load' ), 2 );
+	    add_action( 'wp_maybe_auto_update', array( $this, 'maybe_load' ), 1 );
+
+	    add_action( 'delete_site_transient_update_plugins', array( $this, 'flush_cache' ) );
+	    add_action( 'delete_site_transient_update_themes', array( $this, 'flush_cache' ) );
+	    add_action( 'automatic_updates_complete', array( $this, 'flush_cache' ) );
+    }
+
+    public function flush_cache() {
+		$this->maybe_load();
+		$this->api->flush_cache();
     }
 
 	public function ssl_verify( $args, $url ) {
@@ -114,6 +121,12 @@ final class Vendidero_Helper {
         return $schedules;
     }
 
+    public function maybe_init() {
+    	if ( ! did_action( 'vendidero_helper_init' ) ) {
+    		$this->init();
+	    }
+    }
+
     public function init() {
         $this->debug_mode = defined( 'VD_DEBUG' ) ? VD_DEBUG : false;
 
@@ -137,6 +150,8 @@ final class Vendidero_Helper {
         }
 
 	    add_action( 'upgrader_pre_download', array( $this, 'block_expired_updates' ), 50, 2 );
+
+        do_action( 'vendidero_helper_init' );
     }
 
 	/**
@@ -209,7 +224,15 @@ final class Vendidero_Helper {
         return true;
     }
 
+	public function maybe_load() {
+		if ( ! did_action( 'vendidero_helper_loaded' ) ) {
+			$this->load();
+		}
+	}
+
     public function load() {
+    	$this->maybe_init();
+
 	    // If multisite, plugin must be network activated. First make sure the is_plugin_active_for_network function exists
 	    if ( is_multisite() && ! is_network_admin() ) {
 		    remove_action( 'admin_notices', 'vendidero_helper_notice' );
@@ -227,6 +250,8 @@ final class Vendidero_Helper {
         $this->set_data();
         $this->register_products();
         $this->update_products();
+
+        do_action( 'vendidero_helper_loaded' );
     }
 
 	public function admin_notice_require_network_activation() {
@@ -234,10 +259,7 @@ final class Vendidero_Helper {
 	}
 
     public function expire_cron() {
-        $this->api = new VD_API();
-
-        $this->includes();
-        $this->load();
+        $this->maybe_load();
 
         if ( ! empty( $this->products ) ) {
             foreach ( $this->products as $key => $product ) {
@@ -280,7 +302,7 @@ final class Vendidero_Helper {
 	        $products     = get_option( 'vendidero_notice_expire' );
 	        $new_products = array();
 
-	        foreach ( $products as $key => $val ) {
+	        foreach( $products as $key => $val ) {
 
 		        if ( isset( VD()->products[ $key ] ) ) {
 			        $product = VD()->products[ $key ];
@@ -613,5 +635,4 @@ function VD() {
 }
 
 $GLOBALS['vendidero_helper'] = VD();
-
 ?>
