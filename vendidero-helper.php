@@ -3,7 +3,7 @@
  * Plugin Name: Vendidero Helper
  * Plugin URI: http://vendidero.de
  * Description: Will help vendidero users to manage their licenses and receive automatic updates
- * Version: 2.0.2
+ * Version: 2.1.0
  * Author: Vendidero
  * Author URI: http://vendidero.de
  * License: GPL version 2 or later - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -24,7 +24,7 @@ final class Vendidero_Helper {
      */
     protected static $_instance = null;
 
-    public $version = '2.0.2';
+    public $version = '2.1.0';
 
     /**
      * @var VD_API $api
@@ -33,10 +33,17 @@ final class Vendidero_Helper {
     public $plugins     = array();
     public $themes      = array();
 
+	/**
+	 * @var null|VD_Admin
+	 */
+	private $admin            = null;
     private $debug_mode       = false;
     private $token            = 'vendidero-api';
     private $api_url          = 'https://vendidero.de/wp-json/vd/v1/';
 	private $download_api_url = 'https://download.vendidero.de/api/v1/';
+	/**
+	 * @var VD_Product[]
+	 */
     private $products         = array();
 
     /**
@@ -262,29 +269,40 @@ final class Vendidero_Helper {
         $this->maybe_load();
 
         if ( ! empty( $this->products ) ) {
-            foreach ( $this->products as $key => $product ) {
+	        $notice = get_option( 'vendidero_notice_expire', array() );
 
+	        foreach ( $this->products as $key => $product ) {
                 if ( ! $product->is_registered() ) {
+	                unset( $notice[ $key ] );
                     continue;
                 }
 
-                // Refresh expiration date
-                $product->refresh_expiration_date( true );
-                
-                if ( $expire = $product->get_expiration_date( false ) ) {
-                    $diff   = VD()->get_date_diff( date( 'Y-m-d' ), $expire );
-                    $notice = get_option( 'vendidero_notice_expire', array() );
+                if ( $product->supports_renewals() ) {
+                	// Refresh expiration date
+	                $product->refresh_expiration_date( true );
 
-                    if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
-                        $notice[ $key ] = true;
+	                if ( $expire = $product->get_expiration_date( false ) ) {
+		                $diff = VD()->get_date_diff( date( 'Y-m-d' ), $expire );
 
-	                    delete_transient( "_vendidero_helper_updates_{$product->id}" );
-	                    delete_transient( "_vendidero_helper_update_info_{$product->id}" );
-                    }
+		                if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
+			                $notice[ $key ] = true;
 
-                    update_option( 'vendidero_notice_expire', $notice );
+			                delete_transient( "_vendidero_helper_updates_{$product->id}" );
+			                delete_transient( "_vendidero_helper_update_info_{$product->id}" );
+		                } elseif ( strtotime( $expire ) > time() ) {
+			                unset( $notice[ $key ] );
+		                }
+	                }
+                } else {
+	                unset( $notice[ $key ] );
                 }
             }
+
+	        if ( empty( $notice ) ) {
+	        	delete_option( 'vendidero_notice_expire' );
+	        } else {
+		        update_option( 'vendidero_notice_expire', $notice );
+	        }
         }
     }
 
@@ -297,22 +315,28 @@ final class Vendidero_Helper {
 
     public function expire_notice() {
         if ( get_option( 'vendidero_notice_expire' ) ) {
+	        $screen = get_current_screen();
+
+	        if ( $this->admin && in_array( $screen->id, $this->admin->get_notice_excluded_screens() ) ) {
+		        return;
+	        }
 
         	// Check whether license has been renewed already
 	        $products     = get_option( 'vendidero_notice_expire' );
 	        $new_products = array();
 
 	        foreach( $products as $key => $val ) {
-
 		        if ( isset( VD()->products[ $key ] ) ) {
 			        $product = VD()->products[ $key ];
 
-			        if ( $expire = $product->get_expiration_date( false ) ) {
-			        	$diff = VD()->get_date_diff( date( 'Y-m-d' ), $expire );
+			        if ( $product->supports_renewals() ) {
+				        if ( $expire = $product->get_expiration_date( false ) ) {
+					        $diff = VD()->get_date_diff( date( 'Y-m-d' ), $expire );
 
-				        if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
-					        $new_products[ $key ] = true;
-                        }
+					        if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
+						        $new_products[ $key ] = true;
+					        }
+				        }
 			        }
 		        }
 	        }
@@ -407,18 +431,23 @@ final class Vendidero_Helper {
 
     public function get_available_plugins() {
         return array(
-            'woocommerce-germanized-pro/woocommerce-germanized-pro.php' => 148,
+            'woocommerce-germanized-pro/woocommerce-germanized-pro.php' => array(
+            	'product_id' => 148
+            ),
         );
     }
 
 	public function get_available_themes() {
 		return array(
-			'vendipro/style.css' => 48,
+			'vendipro/style.css' => array(
+				'product_id'        => 48,
+				'supports_renewals' => false,
+			),
 		);
 	}
 
     public function includes() {
-        include_once( $this->plugin_path() . '/includes/class-vd-admin.php' );
+        $this->admin = include_once( $this->plugin_path() . '/includes/class-vd-admin.php' );
     }
 
     public function register_products() {
@@ -437,7 +466,13 @@ final class Vendidero_Helper {
 	            $theme   = get_blog_option( $site->blog_id, 'stylesheet' );
 
                 if ( ! empty( $plugins ) ) {
-                    foreach( $available_plugins as $file => $product_id ) {
+                    foreach( $available_plugins as $file => $args ) {
+	                    $args = wp_parse_args( $args, array(
+		                    'product_id'        => 0,
+		                    'supports_renewals' => true,
+	                    ) );
+
+	                    $product_id = $args['product_id'];
 
                         if ( in_array( $file, $plugins ) ) {
                             if ( array_key_exists( $file, $products ) ) {
@@ -448,10 +483,11 @@ final class Vendidero_Helper {
 
                                 $products[ $file ]->blog_ids[] = $site->blog_id;
                             } else {
-                                $plugin             = new stdClass();
-                                $plugin->file       = $file;
-                                $plugin->product_id = $product_id;
-                                $plugin->blog_ids   = array( $site->blog_id );
+	                            $plugin                    = new stdClass();
+	                            $plugin->file              = $file;
+	                            $plugin->product_id        = $product_id;
+	                            $plugin->supports_renewals = $args['supports_renewals'];
+	                            $plugin->blog_ids          = array( $site->blog_id );
 
                                 $products[ $plugin->file ] = $plugin;
                             }
@@ -462,7 +498,14 @@ final class Vendidero_Helper {
                 if ( $theme ) {
                 	$theme = strpos( $theme, 'style.css' ) === false ? $theme . '/style.css' : $theme;
 
-                	foreach( $available_themes as $file => $product_id ) {
+                	foreach( $available_themes as $file => $args ) {
+                		$args = wp_parse_args( $args, array(
+                			'product_id'        => 0,
+			                'supports_renewals' => true,
+		                ) );
+
+                		$product_id = $args['product_id'];
+
 		                if ( $theme === $file ) {
 			                if ( array_key_exists( $file, $products ) ) {
 
@@ -472,10 +515,11 @@ final class Vendidero_Helper {
 
 				                $products[ $file ]->blog_ids[] = $site->blog_id;
 			                } else {
-				                $plugin             = new stdClass();
-				                $plugin->file       = $file;
-				                $plugin->product_id = $product_id;
-				                $plugin->blog_ids   = array( $site->blog_id );
+				                $plugin                    = new stdClass();
+				                $plugin->file              = $file;
+				                $plugin->product_id        = $product_id;
+				                $plugin->supports_renewals = $args['supports_renewals'];
+				                $plugin->blog_ids          = array( $site->blog_id );
 
 				                $products[ $plugin->file ] = $plugin;
 			                }
@@ -487,9 +531,11 @@ final class Vendidero_Helper {
 
         if ( ! empty( $products ) && is_array( $products ) ) {
             foreach ( $products as $product ) {
-
                 if ( is_object( $product ) && ! empty( $product->file ) && ! empty( $product->product_id ) ) {
-                    $this->add_product( $product->file, $product->product_id, array( 'blog_ids' => isset( $product->blog_ids ) ? $product->blog_ids : array() ) );
+                    $this->add_product( $product->file, $product->product_id, array(
+                    	'blog_ids'          => isset( $product->blog_ids ) ? $product->blog_ids : array(),
+	                    'supports_renewals' => isset( $product->supports_renewals ) ? $product->supports_renewals : true,
+                    ) );
                 }
             }
         }
@@ -509,9 +555,12 @@ final class Vendidero_Helper {
     }
 
     public function add_product( $file, $product_id, $args = array() ) {
+    	$product_id = absint( $product_id );
+
         $args = wp_parse_args( $args, array(
-            'free'     => false,
-            'blog_ids' => array(),
+            'free'              => false,
+            'blog_ids'          => array(),
+	        'supports_renewals' => true,
         ) );
 
         if ( $file != '' && ! isset( $this->products[ $file ] ) ) {
@@ -524,8 +573,19 @@ final class Vendidero_Helper {
                 return false;
             }
 
+	        /**
+	         * Mark legacy VendiPro theme as non-renewable to prevent notices.
+	         */
+            if ( 48 === $product_id ) {
+            	$args['supports_renewals'] = false;
+            }
+
             $this->products[ $file ] = ( $is_theme ? new VD_Product_Theme( $file, $product_id, $args ) : new VD_Product( $file, $product_id, $args ) );
+
+            return true;
         }
+
+        return false;
     }
 
     public function remove_product( $file ) {

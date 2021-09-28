@@ -27,12 +27,16 @@ if ( ! $show_notice ) {
 
 <div class="error fade">
 	<h3><?php _e( 'Update & Support Flatrate expires', 'vendidero-helper' ); ?></h3>
-	<p><?php _e( 'It seems like the Update & Support Flatrate of one of your vendidero products expires in a few days:', 'vendidero-helper' ); ?></p>
+	<p><?php _e( 'It seems like the Update & Support Flatrate of one of your vendidero products expires in a few days or has already expired:', 'vendidero-helper' ); ?></p>
 
     <?php foreach( $products as $key => $val ) : $product = VD()->get_product( $key ); ?>
-		<p><strong><?php echo $product->Name; ?></strong></p>
+        <?php if ( $product->has_expired() ) : ?>
+ 		    <p><?php printf( __( '%1$s expired on %2$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', $product->get_expiration_date( get_option( 'date_format' ) ) ); ?></p>
+        <?php else: ?>
+            <p><?php printf( __( '%1$s expires on %2$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', $product->get_expiration_date( get_option( 'date_format' ) ) ); ?></p>
+	    <?php endif; ?>
 
-        <a class="button button-primary" href="<?php echo $product->get_renewal_url();?>" target="_blank"><?php _e( 'renew now', 'vendidero-helper' );?></a>
+        <a class="button button-primary wc-gzd-button" href="<?php echo $product->get_renewal_url();?>" target="_blank"><?php _e( 'renew now', 'vendidero-helper' );?></a>
 	<?php endforeach; ?>
 
 	<p class="alignleft wc-gzd-button-wrapper"></p>

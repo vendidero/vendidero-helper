@@ -12,7 +12,18 @@
                 $table->data = VD()->get_products( false );
                 $table->prepare_items();
                 $table->display();
-                submit_button( __( 'Register Products', 'vendidero-helper' ), 'button-primary' );
+
+                $has_unregisted = false;
+
+                foreach( $table->data as $product ) {
+                    if ( ! $product->is_registered() ) {
+                        $has_unregisted = true;
+                    }
+                }
+
+                if ( $has_unregisted ) {
+	                submit_button( __( 'Register Products', 'vendidero-helper' ), 'button-primary' );
+                }
 		    ?>
 
 		    <?php wp_nonce_field( 'bulk_licenses' ); ?>

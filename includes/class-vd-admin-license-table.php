@@ -50,13 +50,12 @@ class VD_Admin_License_Table extends WP_List_Table {
     }
 
     public function get_columns() {
-
-        $columns = array(
-	        'product_name'          => __( 'Product', 'vendidero-helper' ),
-            'product_version'       => __( 'Version', 'vendidero-helper' ),
-            'product_expires'       => __( 'Update & Support', 'vendidero-helper' ),
-            'product_status'        => __( 'License Key', 'vendidero-helper' )
-        );
+	    $columns = array(
+		    'product_name'    => __( 'Product', 'vendidero-helper' ),
+		    'product_version' => __( 'Version', 'vendidero-helper' ),
+		    'product_expires' => __( 'Update & Support', 'vendidero-helper' ),
+		    'product_status'  => __( 'License Key', 'vendidero-helper' )
+	    );
 
         return $columns;
     }
@@ -88,8 +87,8 @@ class VD_Admin_License_Table extends WP_List_Table {
     public function column_product_expires( $item ) {
         if ( $item->get_expiration_date() ) {
 
-            if ( $item->has_expired() ) {
-                return '<a href="' . $item->get_renewal_url() . '" class="button button-primary" target="_blank">' . __( 'renew now', 'vendidero-helper' ) . '</a>';
+            if ( $item->has_expired() && $item->supports_renewals() ) {
+                return '<a href="' . $item->get_renewal_url() . '" class="button button-primary wc-gzd-button" target="_blank">' . __( 'renew now', 'vendidero-helper' ) . '</a>';
             }
 
             return $item->get_expiration_date();
