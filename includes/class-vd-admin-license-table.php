@@ -88,10 +88,16 @@ class VD_Admin_License_Table extends WP_List_Table {
         if ( $item->get_expiration_date() ) {
 
             if ( $item->has_expired() && $item->supports_renewals() ) {
-                return '<a href="' . $item->get_renewal_url() . '" class="button button-primary wc-gzd-button" target="_blank">' . __( 'renew now', 'vendidero-helper' ) . '</a>';
+                $return = '<a href="' . $item->get_renewal_url() . '" class="button button-primary wc-gzd-button" target="_blank">' . __( 'renew now', 'vendidero-helper' ) . '</a>';
+            } else {
+	            $return = $item->get_expiration_date();
             }
 
-            return $item->get_expiration_date();
+			if ( $item->supports_renewals() ) {
+				$return .= '<a class="refresh-expiration" href="' . wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $item->id ) ), 'vd-refresh-license-status' ) . '">' . __( 'Refresh', 'vendidero-helper' ) . '</a>';
+			}
+
+			return $return;
         }
 
         return '-';

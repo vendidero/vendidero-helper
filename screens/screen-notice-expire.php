@@ -12,7 +12,7 @@ $products    = get_option( 'vendidero_notice_expire' );
 $show_notice = false;
 
 foreach ( $products as $key => $val ) {
-	if ( VD()->get_product( $key ) ) {
+	if ( ( $product = VD()->get_product( $key ) ) && $product->has_expired() ) {
 		$show_notice = true;
 	} else {
 		unset( $products[ $key ] );
@@ -26,8 +26,8 @@ if ( ! $show_notice ) {
 ?>
 
 <div class="error fade">
-	<h3><?php _e( 'Update & Support Flatrate expires', 'vendidero-helper' ); ?></h3>
-	<p><?php _e( 'It seems like the Update & Support Flatrate of one of your vendidero products expires in a few days or has already expired:', 'vendidero-helper' ); ?></p>
+	<h3><?php _e( 'Update- and Support flat expires', 'vendidero-helper' ); ?></h3>
+	<p><?php _e( 'It seems like the Update- and Support flat of one of your vendidero products expires in a few days or has already expired:', 'vendidero-helper' ); ?></p>
 
     <?php foreach( $products as $key => $val ) : $product = VD()->get_product( $key ); ?>
         <?php if ( $product->has_expired() ) : ?>
@@ -40,8 +40,11 @@ if ( ! $show_notice ) {
 	<?php endforeach; ?>
 
 	<p class="alignleft wc-gzd-button-wrapper"></p>
+
 	<p class="alignright">
-		<a href="<?php echo esc_url( $dismiss_url );?>" class="vendidero-helper-dismiss"><?php _e( 'Hide this notice', 'vendidero-helper' ); ?></a>
+        <a class="" href="https://vendidero.de/vendidero-service" target="_blank"><?php _e( 'Learn more', 'vendidero-helper' );?></a> |
+        <a class="" href="<?php echo admin_url( 'index.php?page=vendidero' ); ?>"><?php _e( 'See license details', 'vendidero-helper' );?></a> |
+        <a href="<?php echo esc_url( $dismiss_url );?>" class="vendidero-helper-dismiss"><?php _e( 'Hide this notice', 'vendidero-helper' ); ?></a>
 	</p>
 	<div class="clear"></div>
 </div>

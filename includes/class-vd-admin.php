@@ -19,7 +19,26 @@ class VD_Admin {
 
 		add_action( 'admin_notices', array( $this, 'product_registered' ) );
 		add_action( 'network_admin_notices', array( $this, 'product_registered' ) );
+
+        add_action( 'admin_post_vd_refresh_license_status', array( $this, 'refresh_license_status' ) );
 	}
+
+    public function refresh_license_status() {
+        if ( isset( $_GET['_wpnonce'], $_GET['product_id'] ) ) {
+            if ( current_user_can( 'manage_options' ) ) {
+                if ( wp_verify_nonce( $_GET['_wpnonce'], 'vd-refresh-license-status' ) ) {
+                    $product_id = absint( $_GET['product_id'] );
+
+                    if ( $product = VD()->get_product_by_id( $product_id ) ) {
+                        $product->refresh_expiration_date( true );
+                    }
+
+                    wp_safe_redirect( admin_url( 'index.php?page=vendidero' ) );
+                    exit();
+                }
+            }
+        }
+    }
 
 	public function plugins_api_filter( $result, $action, $args ) {
 		$products = VD()->get_products();
@@ -155,7 +174,7 @@ class VD_Admin {
 			    </div>
             <?php } elseif( $product->has_expired() && $product->supports_renewals() ) { ?>
                 <div class="error">
-                    <p><?php printf( __( 'Your %1$s license has expired on %2$s. %3$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', $product->get_expiration_date( get_option( 'date_format' ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url() ) . '">' . __( 'renew now', 'vendidero-helper' ) . '</a>' ); ?></p>
+                    <p><?php printf( __( 'Your %1$s license has expired on %2$s. %3$s %4$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', $product->get_expiration_date( get_option( 'date_format' ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url() ) . '">' . __( 'renew now', 'vendidero-helper' ) . '</a>', '<a href="' . wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $product->id ) ), 'vd-refresh-license-status' ) . '" class="" style="margin-left: 1em;">' . __( 'Already renewed?', 'vendidero-helper' ) . '</a>' ); ?></p>
                 </div>
 			<?php }
 		}
@@ -230,6 +249,9 @@ class VD_Admin {
         }
 
 		VD()->api->flush_cache();
+
+        wp_safe_redirect( admin_url( 'index.php?page=vendidero' ) );
+        exit();
 	}
 
 	public function process_unregister() {
@@ -248,6 +270,9 @@ class VD_Admin {
         }
 
 		VD()->api->flush_cache();
+
+		wp_safe_redirect( admin_url( 'index.php?page=vendidero' ) );
+		exit();
 	}
 
 	public function add_notice( $msg = array(), $type = 'error' ) {

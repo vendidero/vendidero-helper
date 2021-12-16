@@ -68,3 +68,16 @@ span.vd-inline-upgrade-expire-notice {
 .vd-wrapper .column-product_active {
 	width: 30ch;
 }
+
+table.licenses td.product_expires, table.licenses th.product_expires {
+	text-align: center;
+}
+
+table.licenses td.product_expires a.refresh-expiration {
+	margin-top: 5px;
+	font-size: 11px;
+	display: block;
+	color: #50575e;
+	text-decoration: underline;
+	margin-left: 0;
+}
