@@ -33,7 +33,7 @@ class VD_Admin {
                         $product->refresh_expiration_date( true );
                     }
 
-                    wp_safe_redirect( admin_url( 'index.php?page=vendidero' ) );
+                    wp_safe_redirect( VD()->get_helper_url() );
                     exit();
                 }
             }
@@ -94,7 +94,7 @@ class VD_Admin {
 						$product->refresh_expiration_date();
 
 						if ( $product->has_expired() && $product->supports_renewals() ) {
-							echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . admin_url( 'index.php?page=vendidero' ) . '">' . __( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
+							echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . VD()->get_helper_url() . '">' . __( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -108,7 +108,7 @@ class VD_Admin {
                         $product->refresh_expiration_date();
 	
 						if ( $product->has_expired() && $product->supports_renewals() ) {
-                            echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . admin_url( 'index.php?page=vendidero' ) . '">' . __( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
+                            echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . VD()->get_helper_url() . '">' . __( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -157,7 +157,7 @@ class VD_Admin {
 			return;
         }
 
-		$admin_url = is_multisite() ? network_admin_url( 'index.php?page=vendidero' ) : admin_url( 'index.php?page=vendidero' );
+		$admin_url = VD()->get_helper_url();
 
 		foreach ( VD()->get_products( false ) as $product ) {
 		    if ( is_multisite() ) {
@@ -250,7 +250,7 @@ class VD_Admin {
 
 		VD()->api->flush_cache();
 
-        wp_safe_redirect( admin_url( 'index.php?page=vendidero' ) );
+        wp_safe_redirect( VD()->get_helper_url() );
         exit();
 	}
 
@@ -271,7 +271,7 @@ class VD_Admin {
 
 		VD()->api->flush_cache();
 
-		wp_safe_redirect( admin_url( 'index.php?page=vendidero' ) );
+		wp_safe_redirect( VD()->get_helper_url() );
 		exit();
 	}
 
@@ -290,10 +290,10 @@ class VD_Admin {
 	}
 
 	public function enqueue_scripts() {
-		wp_register_style( 'vp_admin', VD()->plugin_url() . '/assets/css/vd-admin.css' );
+		wp_register_style( 'vp_admin', VD()->plugin_url() . '/assets/css/vd-admin.css', array(), VD()->version );
 		wp_enqueue_style( 'vp_admin' );
 
-		wp_register_script( 'vd_admin_js', VD()->plugin_url() . '/assets/js/vd-admin.js', array( 'jquery' ) );
+		wp_register_script( 'vd_admin_js', VD()->plugin_url() . '/assets/js/vd-admin.js', array( 'jquery' ), VD()->version, true );
 		wp_enqueue_script( 'vd_admin_js' );
 	}
 }

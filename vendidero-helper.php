@@ -110,6 +110,10 @@ final class Vendidero_Helper {
 		return $args;
 	}
 
+	public function get_helper_url() {
+		return is_multisite() ? network_admin_url( 'index.php?page=vendidero' ) : admin_url( 'index.php?page=vendidero' );
+	}
+
     public function plugin_action( $filename ) {
     	foreach( $this->get_products() as $product ) {
     		if ( $product->file === $filename ) {
@@ -690,6 +694,9 @@ final class Vendidero_Helper {
 
 }
 
+/**
+ * @return Vendidero_Helper
+ */
 function VD() {
     return Vendidero_Helper::instance();
 }
