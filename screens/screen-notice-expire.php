@@ -43,7 +43,7 @@ if ( ! $show_notice ) {
 
 	<p class="alignright">
         <a class="" href="https://vendidero.de/vendidero-service" target="_blank"><?php _e( 'Learn more', 'vendidero-helper' );?></a> |
-        <a class="" href="<?php echo VD()->get_admin_url(); ?>"><?php _e( 'See license details', 'vendidero-helper' );?></a> |
+        <a class="" href="<?php echo VD()->get_helper_url(); ?>"><?php _e( 'See license details', 'vendidero-helper' );?></a> |
         <a href="<?php echo esc_url( $dismiss_url );?>" class="vendidero-helper-dismiss"><?php _e( 'Hide this notice', 'vendidero-helper' ); ?></a>
 	</p>
 	<div class="clear"></div>
