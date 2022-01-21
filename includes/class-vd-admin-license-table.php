@@ -116,7 +116,7 @@ class VD_Admin_License_Table extends WP_List_Table {
 
     	if ( $latest ) {
     		if ( version_compare( $latest->version, $current_version, '>' ) ) {
-    			$update_url  = ( is_multisite() ? network_admin_url( 'update-core.php' ) : admin_url( 'update-core.php' ) );
+    			$update_url  = ( is_multisite() ? network_admin_url( 'update-core.php?force-check=1' ) : admin_url( 'update-core.php?force-check=1' ) );
     			$status      = 'old';
     			$new_version =  __( 'Newest version:', 'vendidero-helper' ) . ' <span class="version version-latest">' . $latest->version . '</span>';
 
