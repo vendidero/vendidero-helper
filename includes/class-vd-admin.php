@@ -21,6 +21,8 @@ class VD_Admin {
 		add_action( 'network_admin_notices', array( $this, 'product_registered' ) );
 
         add_action( 'admin_post_vd_refresh_license_status', array( $this, 'refresh_license_status' ) );
+
+		add_action( 'vd_admin_notices', array( $this, 'print_notice' ) );
 	}
 
     public function refresh_license_status() {
@@ -276,16 +278,24 @@ class VD_Admin {
 	}
 
 	public function add_notice( $msg = array(), $type = 'error' ) {
-		$this->notices = array( 'msg' => $msg, 'type' => $type );
+        set_transient( 'vendidero_helper_notices', array( 'msg' => $msg, 'type' => $type ), MINUTE_IN_SECONDS * 10 );
+	}
 
-		add_action( 'vd_admin_notices', array( $this, 'print_notice' ) );
+    public function get_notices() {
+        return get_transient( 'vendidero_helper_notices' );
+    }
+
+	public function clean_notices() {
+		return delete_transient( 'vendidero_helper_notices' );
 	}
 
 	public function print_notice() {
-		if ( ! empty( $this->notices ) ) {
-			echo '<div class="inline ' . $this->notices['type'] . '"><p>';
-			echo implode( "<br/>", $this->notices['msg'] );
+		if ( $notices = $this->get_notices() ) {
+			echo '<div class="inline ' . esc_attr( $notices['type'] ) . '"><p>';
+			echo implode( "<br/>", $notices['msg'] );
 			echo '</p></div>';
+
+            $this->clean_notices();
 		}
 	}
 

@@ -68,7 +68,7 @@ class VD_Updater {
 
 	public function print_notice() {
 		if ( ! empty( $this->notices ) ) {
-			echo '<div class="vd-notice-' . ( $this->product->is_theme() ? 'theme' : 'plugin' ) . '-update inline ' . $this->notices['type'] . '"><p>';
+			echo '<div class="vd-notice-' . ( $this->product->is_theme() ? 'theme' : 'plugin' ) . '-update inline ' . esc_attr( $this->notices['type'] ) . '"><p>';
 
 			if ( is_array( $this->notices['msg'] ) ) {
                 echo implode( "<br/>", $this->notices['msg'] );
