@@ -36,14 +36,14 @@ if ( ! $show_notice ) {
             <p><?php printf( __( '%1$s expires on %2$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', $product->get_expiration_date( get_option( 'date_format' ) ) ); ?></p>
 	    <?php endif; ?>
 
-        <a class="button button-primary wc-gzd-button" href="<?php echo $product->get_renewal_url();?>" target="_blank"><?php _e( 'renew now', 'vendidero-helper' );?></a>
+        <a class="button button-primary wc-gzd-button" href="<?php echo esc_url( $product->get_renewal_url() ); ?>" target="_blank"><?php _e( 'renew now', 'vendidero-helper' );?></a>
 	<?php endforeach; ?>
 
 	<p class="alignleft wc-gzd-button-wrapper"></p>
 
 	<p class="alignright">
         <a class="" href="https://vendidero.de/vendidero-service" target="_blank"><?php _e( 'Learn more', 'vendidero-helper' );?></a> |
-        <a class="" href="<?php echo VD()->get_helper_url(); ?>"><?php _e( 'See license details', 'vendidero-helper' );?></a> |
+        <a class="" href="<?php echo esc_url( VD()->get_helper_url() ); ?>"><?php _e( 'See license details', 'vendidero-helper' );?></a> |
         <a href="<?php echo esc_url( $dismiss_url );?>" class="vendidero-helper-dismiss"><?php _e( 'Hide this notice', 'vendidero-helper' ); ?></a>
 	</p>
 	<div class="clear"></div>

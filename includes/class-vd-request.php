@@ -49,7 +49,7 @@ class VD_Request {
 	    if ( 'GET' === $this->args['method'] ) {
 	        $url = add_query_arg( $this->args, $this->get_endpoint() );
 
-            $this->raw = wp_remote_get( $url, array(
+            $this->raw = wp_remote_get( esc_url_raw( $url ), array(
                 'redirection' => 5,
                 'blocking'    => true,
                 'headers'     => array( 'user-agent' => 'Vendidero/' . VD()->version ),
@@ -57,7 +57,7 @@ class VD_Request {
                 'sslverify'   => false
             ) );
         } else {
-            $this->raw = wp_remote_post( $this->get_endpoint(), array(
+            $this->raw = wp_remote_post( esc_url_raw( $this->get_endpoint() ), array(
                 'method'      => 'POST',
                 'redirection' => 5,
                 'blocking'    => true,

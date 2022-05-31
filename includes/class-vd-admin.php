@@ -35,7 +35,7 @@ class VD_Admin {
                         $product->refresh_expiration_date( true );
                     }
 
-                    wp_safe_redirect( VD()->get_helper_url() );
+                    wp_safe_redirect( esc_url_raw( VD()->get_helper_url() ) );
                     exit();
                 }
             }
@@ -96,7 +96,7 @@ class VD_Admin {
 						$product->refresh_expiration_date();
 
 						if ( $product->has_expired() && $product->supports_renewals() ) {
-							echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . VD()->get_helper_url() . '">' . __( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
+							echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( VD()->get_helper_url() ) . '">' . __( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -110,7 +110,7 @@ class VD_Admin {
                         $product->refresh_expiration_date();
 	
 						if ( $product->has_expired() && $product->supports_renewals() ) {
-                            echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . VD()->get_helper_url() . '">' . __( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
+                            echo '<div class="vd-upgrade-notice" data-for="' . md5( $product->Name ) .'" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( __( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( VD()->get_helper_url() ) . '">' . __( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -252,7 +252,7 @@ class VD_Admin {
 
 		VD()->api->flush_cache();
 
-        wp_safe_redirect( VD()->get_helper_url() );
+        wp_safe_redirect( esc_url_raw( VD()->get_helper_url() ) );
         exit();
 	}
 
@@ -273,7 +273,7 @@ class VD_Admin {
 
 		VD()->api->flush_cache();
 
-		wp_safe_redirect( VD()->get_helper_url() );
+		wp_safe_redirect( esc_url_raw( VD()->get_helper_url() ) );
 		exit();
 	}
 
