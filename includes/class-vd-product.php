@@ -5,35 +5,38 @@ class VD_Product {
 	public $file;
 	public $id;
 	public $slug;
-	public $free = false;
-	public $theme = false;
-	public $meta = array();
-	public $updater = null;
+	public $free     = false;
+	public $theme    = false;
+	public $meta     = array();
+	public $updater  = null;
 	public $blog_ids = array();
 	public $expires;
-	public $home_url = array();
+	public $home_url          = array();
 	public $supports_renewals = true;
-    private $key;
+	private $key;
 
 	public function __construct( $file, $product_id, $args = array() ) {
 
-        $args = wp_parse_args( $args, array(
-            'free'              => false,
-            'blog_ids'          => array(),
-	        'supports_renewals' => true,
-        ) );
+		$args = wp_parse_args(
+			$args,
+			array(
+				'free'              => false,
+				'blog_ids'          => array(),
+				'supports_renewals' => true,
+			)
+		);
 
-        $this->id                = $product_id;
-        $this->file              = $file;
-        $this->free              = $args['free'];
-        $this->blog_ids          = $args['blog_ids'];
-        $this->supports_renewals = $args['supports_renewals'];
+		$this->id                = $product_id;
+		$this->file              = $file;
+		$this->free              = $args['free'];
+		$this->blog_ids          = $args['blog_ids'];
+		$this->supports_renewals = $args['supports_renewals'];
 		$this->key               = '';
 		$this->expires           = '';
 		$this->home_url          = array();
 
 		if ( ! empty( $this->blog_ids ) ) {
-			foreach( $this->blog_ids as $blog_id ) {
+			foreach ( $this->blog_ids as $blog_id ) {
 				$this->home_url[] = VD()->sanitize_domain( get_home_url( $blog_id, '/' ) );
 			}
 		} else {
@@ -42,13 +45,13 @@ class VD_Product {
 
 		$this->home_url = array_values( array_unique( $this->home_url ) );
 
-        $this->set_meta();
-        $this->slug     = sanitize_title( $this->Name );
-		$registered     = $this->get_options();
+		$this->set_meta();
+		$this->slug = sanitize_title( $this->Name );
+		$registered = $this->get_options();
 
 		if ( isset( $registered[ $this->file ] ) ) {
-			$this->key     = $registered[ $this->file ]["key"];
-			$this->expires = $registered[ $this->file ]["expires"];
+			$this->key     = $registered[ $this->file ]['key'];
+			$this->expires = $registered[ $this->file ]['expires'];
 		}
 	}
 
@@ -97,10 +100,10 @@ class VD_Product {
 			$expire = VD()->api->expiration_check( $this, $force );
 
 			if ( ! is_wp_error( $expire ) ) {
-                $this->set_expiration_date( $expire );
-            }
+				$this->set_expiration_date( $expire );
+			}
 
-            return $expire;
+			return $expire;
 		}
 
 		return false;
@@ -115,27 +118,27 @@ class VD_Product {
 	public function get_expiration_date( $format = 'd.m.Y' ) {
 		if ( ! $this->is_registered() || empty( $this->expires ) ) {
 			return false;
-        }
+		}
 
 		$date = $this->expires;
 
-		return ( ! $format ? $date : date( $format, strtotime( $date ) ) );
+		return ( ! $format ? $date : date( $format, strtotime( $date ) ) ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 	}
 
 	public function has_expired() {
 		if ( ! $this->is_registered() || empty( $this->expires ) ) {
 			return false;
-        }
+		}
 
-        if ( ( strtotime( $this->expires ) < time() ) ) {
-            return true;
-        }
+		if ( ( strtotime( $this->expires ) < time() ) ) {
+			return true;
+		}
 
-        return false;
+		return false;
 	}
 
 	protected function get_options() {
-		if( is_multisite() ) {
+		if ( is_multisite() ) {
 			return get_site_option( 'vendidero_registered', array() );
 		} else {
 			return get_option( 'vendidero_registered', array() );
@@ -143,7 +146,7 @@ class VD_Product {
 	}
 
 	protected function update_options( $data ) {
-		if( is_multisite() ) {
+		if ( is_multisite() ) {
 			return update_site_option( 'vendidero_registered', $data );
 		} else {
 			return update_option( 'vendidero_registered', $data );
@@ -154,9 +157,12 @@ class VD_Product {
 		$registered = $this->get_options();
 
 		if ( ! isset( $registered[ $this->file ] ) ) {
-			$registered[ $this->file ] = array( "key" => md5( $key ), "expires" => $expires );
-			$this->expires             = $registered[ $this->file ]["expires"];
-			$this->key                 = $registered[ $this->file ]["key"];
+			$registered[ $this->file ] = array(
+				'key'     => md5( $key ),
+				'expires' => $expires,
+			);
+			$this->expires             = $registered[ $this->file ]['expires'];
+			$this->key                 = $registered[ $this->file ]['key'];
 		}
 
 		$this->update_options( $registered );
@@ -166,8 +172,8 @@ class VD_Product {
 		$registered = $this->get_options();
 
 		if ( isset( $registered[ $this->file ] ) ) {
-			$registered[ $this->file ]["expires"] = $expires;
-			$this->expires                        = $registered[ $this->file ]["expires"];
+			$registered[ $this->file ]['expires'] = $expires;
+			$this->expires                        = $registered[ $this->file ]['expires'];
 		}
 
 		$this->update_options( $registered );
@@ -175,7 +181,7 @@ class VD_Product {
 
 	public function unregister() {
 		$registered = $this->get_options();
-		
+
 		if ( isset( $registered[ $this->file ] ) ) {
 			unset( $registered[ $this->file ] );
 
@@ -184,11 +190,11 @@ class VD_Product {
 		}
 
 		if ( ! empty( $registered ) ) {
-			foreach( $registered as $key => $val ) {
+			foreach ( $registered as $key => $val ) {
 
 				if ( is_numeric( $key ) ) {
 					unset( $registered[ $key ] );
-                }
+				}
 			}
 		}
 
@@ -202,11 +208,11 @@ class VD_Product {
 	public function get_key() {
 		if ( ! $this->is_registered() ) {
 			return false;
-        }
+		}
 
-        if ( $this->is_free() ) {
+		if ( $this->is_free() ) {
 			return '';
-        }
+		}
 
 		return $this->key;
 	}

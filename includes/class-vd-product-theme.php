@@ -12,12 +12,11 @@ class VD_Product_Theme extends VD_Product {
 		$theme_network_wide_registered = true;
 		$registered                    = array();
 
-		foreach( get_sites() as $key => $site ) {
-
+		foreach ( get_sites() as $key => $site ) {
 			$theme_active = false;
-			$theme = get_blog_option( $site->blog_id, 'template', '' );
+			$theme        = get_blog_option( $site->blog_id, 'template', '' );
 
-			if ( $theme == $this->meta->template ) {
+			if ( $theme === $this->meta->template ) {
 				$theme_active = true;
 			}
 
@@ -29,7 +28,7 @@ class VD_Product_Theme extends VD_Product {
 				if ( ! isset( $site_registered[ $this->file ] ) ) {
 					$theme_network_wide_registered = false;
 				} else {
-					$registered = $site_registered;
+					$registered     = $site_registered;
 					$this->home_url = get_home_url( $site->blog_id, '/' );
 				}
 			}
@@ -47,7 +46,7 @@ class VD_Product_Theme extends VD_Product {
 
 		if ( $this->meta->get( $key ) ) {
 			$value = $this->meta->get( $key );
-        }
+		}
 
 		return $value;
 	}
@@ -57,7 +56,7 @@ class VD_Product_Theme extends VD_Product {
 
 		if ( $this->meta->get( $key ) ) {
 			$is = true;
-        }
+		}
 
 		return $is;
 	}

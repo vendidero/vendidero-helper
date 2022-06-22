@@ -14,25 +14,25 @@ class VD_API {
 		$request = new VD_Request( 'license/' . md5( $key ), $product );
 
 		if ( ! $request->is_error() ) {
-			$product->register( $key, ( $request->get_response( "expiration_date" ) ? $request->get_response( "expiration_date" ) : '' ) );
-        }
+			$product->register( $key, ( $request->get_response( 'expiration_date' ) ? $request->get_response( 'expiration_date' ) : '' ) );
+		}
 
 		return $request->get_response();
 	}
 
 	public function unregister( VD_Product $product ) {
-	    $product->unregister();
+		$product->unregister();
 
 		return true;
 	}
 
 	public function info( VD_Product $product ) {
-		$data = $this->_info_check( $product );
+		$data = $this->info_check_callback( $product );
 
 		return ( false !== $data ? $data : false );
 	}
 
-	private function _expiry_check( VD_Product $product ) {
+	private function expiry_check_callback( VD_Product $product ) {
 		$cache_key = "_vendidero_helper_expiry_{$product->id}";
 		$data      = get_transient( $cache_key );
 
@@ -42,7 +42,7 @@ class VD_API {
 				$error  = new WP_Error();
 
 				if ( ! empty( $errors ) ) {
-					foreach( $errors as $i => $e ) {
+					foreach ( $errors as $i => $e ) {
 						$error->add( $i, $e );
 					}
 				}
@@ -65,11 +65,11 @@ class VD_API {
 		if ( $request->is_error() ) {
 			$error = $request->get_response();
 
-			foreach( $error->get_error_messages( $error->get_error_code() ) as $msg ) {
+			foreach ( $error->get_error_messages( $error->get_error_code() ) as $msg ) {
 				$data['errors'][] = $msg;
 			}
 		} else {
-			$data['expiration_date'] = $request->get_response( "expiration_date" );
+			$data['expiration_date'] = $request->get_response( 'expiration_date' );
 		}
 
 		set_transient( $cache_key, $data, 10 * MINUTE_IN_SECONDS );
@@ -82,16 +82,16 @@ class VD_API {
 			delete_transient( "_vendidero_helper_expiry_{$product->id}" );
 		}
 
-		return $this->_expiry_check( $product );
+		return $this->expiry_check_callback( $product );
 	}
 
 	public function flush_cache() {
-		foreach( VD()->get_products() as $product ) {
+		foreach ( VD()->get_products() as $product ) {
 			$product->flush_api_cache();
 		}
 	}
 
-	private function _info_check( VD_Product $product ) {
+	private function info_check_callback( VD_Product $product ) {
 		$cache_key        = "_vendidero_helper_update_info_{$product->id}";
 		$data             = get_transient( $cache_key );
 		$update_transient = get_transient( "_vendidero_helper_updates_{$product->id}" );
@@ -122,11 +122,11 @@ class VD_API {
 		if ( $request->is_error() ) {
 			$error = $request->get_response();
 
-			foreach( $error->get_error_messages( $error->get_error_code() ) as $msg ) {
+			foreach ( $error->get_error_messages( $error->get_error_code() ) as $msg ) {
 				$data['errors'][] = $msg;
 			}
 		} else {
-			$data['payload'] = $request->get_response( "payload" );
+			$data['payload'] = $request->get_response( 'payload' );
 		}
 
 		set_transient( $cache_key, $data, 6 * HOUR_IN_SECONDS );
@@ -134,11 +134,11 @@ class VD_API {
 		return ! empty( $data['errors'] ) ? false : $data['payload'];
 	}
 
-	private function _update_check( VD_Product $product, $key = '' ) {
+	private function update_check_callback( VD_Product $product, $key = '' ) {
 		$cache_key = "_vendidero_helper_updates_{$product->id}";
 		$data      = get_transient( $cache_key );
 
-		if ( false !== $data && ! empty( $_GET['force-check'] ) ) {
+		if ( false !== $data && ! empty( $_GET['force-check'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			// Wait at least 1 minute between multiple forced version check requests.
 			$timeout          = MINUTE_IN_SECONDS;
 			$time_not_changed = ! empty( $data['updated'] ) && $timeout > ( time() - $data['updated'] );
@@ -158,27 +158,34 @@ class VD_API {
 			'payload' => array(),
 			'errors'  => array(),
 			'notices' => array(),
-			'info'    => array()
+			'info'    => array(),
 		);
-    
-		$request = new VD_Request( "releases/{$product->id}/latest", $product, array( 'key' => $key, 'version' => $product->Version ) );
+
+		$request = new VD_Request(
+			"releases/{$product->id}/latest",
+			$product,
+			array(
+				'key'     => $key,
+				'version' => $product->Version,
+			)
+		);
 
 		if ( $request->is_error() ) {
 			$error = $request->get_response();
 
-			foreach( $error->get_error_messages( $error->get_error_code() ) as $msg ) {
+			foreach ( $error->get_error_messages( $error->get_error_code() ) as $msg ) {
 				$data['errors'][] = $msg;
 			}
 		} else {
-			if ( $request->get_response( "notice" ) ) {
-				$data['notices'] = (array) $request->get_response( "notice" );
+			if ( $request->get_response( 'notice' ) ) {
+				$data['notices'] = (array) $request->get_response( 'notice' );
 			}
 
-			if ( $request->get_response( "info" ) ) {
-				$data['info'] = $request->get_response( "info" );
+			if ( $request->get_response( 'info' ) ) {
+				$data['info'] = $request->get_response( 'info' );
 			}
 
-			$data['payload'] = $request->get_response( "payload" );
+			$data['payload'] = $request->get_response( 'payload' );
 		}
 
 		set_transient( $cache_key, $data, 6 * HOUR_IN_SECONDS );
@@ -187,33 +194,50 @@ class VD_API {
 	}
 
 	public function update_check( VD_Product $product, $key = '' ) {
-		return $this->_update_check( $product, $key );
+		return $this->update_check_callback( $product, $key );
 	}
 
 	public function generator_version_check( VD_Product $product, $generator ) {
-	    $slug    = sanitize_title( $generator );
+		$slug    = sanitize_title( $generator );
 		$request = new VD_Request( "generator/{$slug}/info", $product );
 
 		return ( ! $request->is_error() ? $request->get_response( 'all' ) : false );
 	}
 
 	public function generator_check( VD_Product $product, $generator, $settings = array() ) {
-        $slug    = sanitize_title( $generator );
-		$request = new VD_Request( "generator/{$slug}/question", $product, array( 'method' => 'POST', 'key' => $product->get_key(), 'settings' => $settings ) );
+		$slug    = sanitize_title( $generator );
+		$request = new VD_Request(
+			"generator/{$slug}/question",
+			$product,
+			array(
+				'method'   => 'POST',
+				'key'      => $product->get_key(),
+				'settings' => $settings,
+			)
+		);
 
 		return ( ! $request->is_error() ? $request->get_response() : $request->get_response() );
 	}
 
 	public function generator_result_check( VD_Product $product, $generator, $data = array(), $settings = array() ) {
-        $slug    = sanitize_title( $generator );
-		$request = new VD_Request( "generator/{$slug}/result", $product, array( 'method' => 'POST', 'key' => $product->get_key(), 'data' => $data, 'settings' => $settings ) );
+		$slug    = sanitize_title( $generator );
+		$request = new VD_Request(
+			"generator/{$slug}/result",
+			$product,
+			array(
+				'method'   => 'POST',
+				'key'      => $product->get_key(),
+				'data'     => $data,
+				'settings' => $settings,
+			)
+		);
 
 		return ( ! $request->is_error() ? $request->get_response() : $request->get_response() );
 	}
 
 	public function to_array( $object ) {
-		return json_decode( json_encode( $object ), true );
+		return json_decode( wp_json_encode( $object ), true );
 	}
 }
 
-?>
+
