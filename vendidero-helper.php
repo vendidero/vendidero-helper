@@ -1,11 +1,11 @@
 <?php
 /*
- * Plugin Name: Vendidero Helper
- * Plugin URI: http://vendidero.de
- * Description: Will help vendidero users to manage their licenses and receive automatic updates
+ * Plugin Name: vendidero Helper
+ * Plugin URI: https://github.com/vendidero/vendidero-helper
+ * Description: Manage your vendidero licenses and enjoy automatic updates.
  * Version: 2.1.6
  * Author: vendidero
- * Author URI: http://vendidero.de
+ * Author URI: https://vendidero.de
  * Requires at least: 3.8
  * Tested up to: 6.0
  * Network: True
