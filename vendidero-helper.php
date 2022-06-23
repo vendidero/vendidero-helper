@@ -27,7 +27,7 @@ final class Vendidero_Helper {
 	 */
 	protected static $_instance = null;
 
-	public $version = '2.1.5';
+	public $version = '2.1.6';
 
 	/**
 	 * @var VD_API $api
