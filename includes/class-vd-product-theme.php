@@ -12,7 +12,14 @@ class VD_Product_Theme extends VD_Product {
 		$theme_network_wide_registered = true;
 		$registered                    = array();
 
-		foreach ( get_sites() as $key => $site ) {
+		foreach ( get_sites(
+			array(
+				'public'   => 1,
+				'spam'     => 0,
+				'deleted'  => 0,
+				'archived' => 0,
+			)
+		) as $site ) {
 			$theme_active = false;
 			$theme        = get_blog_option( $site->blog_id, 'template', '' );
 
@@ -22,7 +29,6 @@ class VD_Product_Theme extends VD_Product {
 
 			// Do only check license if plugin is activated
 			if ( $theme_active ) {
-
 				$site_registered = get_blog_option( $site->blog_id, 'vendidero_registered', array() );
 
 				if ( ! isset( $site_registered[ $this->file ] ) ) {

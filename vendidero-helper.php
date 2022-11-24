@@ -472,7 +472,14 @@ final class Vendidero_Helper {
 		}
 
 		if ( is_multisite() ) {
-			foreach ( get_sites() as $site ) {
+			foreach ( get_sites(
+				array(
+					'public'   => 1,
+					'spam'     => 0,
+					'deleted'  => 0,
+					'archived' => 0,
+				)
+			) as $site ) {
 				$plugins = get_blog_option( $site->blog_id, 'active_plugins' );
 				$theme   = get_blog_option( $site->blog_id, 'stylesheet' );
 
