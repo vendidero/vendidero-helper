@@ -15,6 +15,10 @@ class VD_Updater {
 	}
 
 	public function update_check( $transient ) {
+		if ( is_null( $transient ) ) {
+			return $transient;
+		}
+
 		$data = VD()->api->update_check( $this->product, $this->product->get_key() );
 
 		if ( ! empty( $data['errors'] ) ) {
