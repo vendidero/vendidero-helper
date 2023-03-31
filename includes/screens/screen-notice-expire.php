@@ -3,16 +3,14 @@
  * Admin View: Notice - Expire
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
-}
+defined( 'ABSPATH' ) || exit;
 
 $dismiss_url = add_query_arg( 'notice', 'vd-hide-notice', add_query_arg( 'nonce', wp_create_nonce( 'vd-hide-notice' ) ) );
 $products    = get_option( 'vendidero_notice_expire' );
 $show_notice = false;
 
 foreach ( $products as $key => $val ) {
-	if ( ( $product = VD()->get_product( $key ) ) && $product->has_expired() ) {
+	if ( ( $product = \Vendidero\VendideroHelper\Package::get_product( $key ) ) && $product->has_expired() ) {
 		$show_notice = true;
 	} else {
 		unset( $products[ $key ] );
@@ -31,7 +29,7 @@ if ( ! $show_notice ) {
 
 	<?php
 	foreach ( $products as $key => $val ) :
-		$product = VD()->get_product( $key );
+		$product = \Vendidero\VendideroHelper\Package::get_product( $key );
 		?>
 		<?php if ( $product->has_expired() ) : ?>
 			<p><?php printf( esc_html__( '%1$s expired on %2$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $product->get_expiration_date( get_option( 'date_format' ) ) ) ); ?></p>
@@ -46,7 +44,7 @@ if ( ! $show_notice ) {
 
 	<p class="alignright">
 		<a class="" href="https://vendidero.de/vendidero-service" target="_blank"><?php esc_html_e( 'Learn more', 'vendidero-helper' ); ?></a> |
-		<a class="" href="<?php echo esc_url( VD()->get_helper_url() ); ?>"><?php esc_html_e( 'See license details', 'vendidero-helper' ); ?></a> |
+		<a class="" href="<?php echo esc_url( \Vendidero\VendideroHelper\Package::get_helper_url() ); ?>"><?php esc_html_e( 'See license details', 'vendidero-helper' ); ?></a> |
 		<a href="<?php echo esc_url( $dismiss_url ); ?>" class="vendidero-helper-dismiss"><?php esc_html_e( 'Hide this notice', 'vendidero-helper' ); ?></a>
 	</p>
 	<div class="clear"></div>

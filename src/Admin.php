@@ -1,48 +1,114 @@
 <?php
 
-class VD_Admin {
+namespace Vendidero\VendideroHelper;
 
-	public $notices = array();
+defined( 'ABSPATH' ) || exit;
 
-	public function __construct() {
+class Admin {
+	public static function init() {
+		add_action( 'admin_init', array( __CLASS__, 'network_install_check' ), 0 );
+		add_action( 'admin_init', array( __CLASS__, 'check_notice_hide' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'expire_notice' ), 0 );
+
 		if ( is_multisite() ) {
-			add_action( 'network_admin_menu', array( $this, 'add_menu' ) );
+			add_action( 'network_admin_menu', array( __CLASS__, 'add_menu' ) );
 		} else {
-			add_action( 'admin_menu', array( $this, 'add_menu' ) );
+			add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
 		}
 
-		add_action( 'vd_process_register', array( $this, 'process_register' ) );
-		add_action( 'vd_process_unregister', array( $this, 'process_unregister' ) );
-		add_filter( 'plugins_api', array( $this, 'plugins_api_filter' ), 150, 3 );
-		add_action( 'in_admin_header', array( $this, 'set_upgrade_notice' ) );
+		add_action( 'vd_process_register', array( __CLASS__, 'process_register' ) );
+		add_action( 'vd_process_unregister', array( __CLASS__, 'process_unregister' ) );
+		add_filter( 'plugins_api', array( __CLASS__, 'plugins_api_filter' ), 150, 3 );
+		add_action( 'in_admin_header', array( __CLASS__, 'set_upgrade_notice' ) );
 
-		add_action( 'admin_notices', array( $this, 'product_registered' ) );
-		add_action( 'network_admin_notices', array( $this, 'product_registered' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'product_registered' ) );
+		add_action( 'network_admin_notices', array( __CLASS__, 'product_registered' ) );
 
-		add_action( 'admin_post_vd_refresh_license_status', array( $this, 'refresh_license_status' ) );
+		add_action( 'admin_post_vd_refresh_license_status', array( __CLASS__, 'refresh_license_status' ) );
 
-		add_action( 'vd_admin_notices', array( $this, 'print_notice' ) );
+		add_action( 'vd_admin_notices', array( __CLASS__, 'print_notice' ) );
 	}
 
-	public function refresh_license_status() {
+	public static function check_notice_hide() {
+		if ( isset( $_GET['notice'] ) && 'vd-hide-notice' === $_GET['notice'] && check_admin_referer( 'vd-hide-notice', 'nonce' ) ) {
+			delete_option( 'vendidero_notice_expire' );
+			remove_action( 'admin_notices', array( __CLASS__, 'expire_notice' ), 0 );
+		}
+	}
+
+	public static function expire_notice() {
+		if ( get_option( 'vendidero_notice_expire' ) ) {
+			$screen = get_current_screen();
+
+			if ( in_array( $screen->id, self::get_notice_excluded_screens(), true ) ) {
+				return;
+			}
+
+			// Check whether license has been renewed already
+			$products     = get_option( 'vendidero_notice_expire' );
+			$new_products = array();
+
+			foreach ( $products as $key => $val ) {
+				if ( $product = Package::get_product( $key ) ) {
+					if ( $product->supports_renewals() ) {
+						if ( $expire = $product->get_expiration_date( false ) ) {
+							$diff = Package::get_date_diff( date( 'Y-m-d' ), $expire ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
+
+							if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
+								$new_products[ $key ] = true;
+							}
+						}
+					}
+				}
+			}
+
+			if ( ! empty( $new_products ) ) {
+				update_option( 'vendidero_notice_expire', $new_products );
+				include_once Package::get_path() . '/includes/screens/screen-notice-expire.php';
+			} else {
+				delete_option( 'vendidero_notice_expire' );
+			}
+		}
+	}
+
+	public static function network_install_check() {
+		// If multisite, plugin must be network activated. First make sure the is_plugin_active_for_network function exists
+		if ( is_multisite() && ! is_network_admin() ) {
+			remove_action( 'admin_notices', 'vendidero_helper_notice' );
+
+			if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
+				require_once ABSPATH . '/wp-admin/includes/plugin.php';
+			}
+
+			if ( ! is_plugin_active_for_network( plugin_basename( __FILE__ ) ) ) {
+				add_action( 'admin_notices', array( __CLASS__, 'admin_notice_require_network_activation' ) );
+			}
+		}
+	}
+
+	public static function admin_notice_require_network_activation() {
+		echo '<div class="error"><p>' . esc_html__( 'vendidero Helper must be network activated when in multisite environment.', 'vendidero-helper' ) . '</p></div>';
+	}
+
+	public static function refresh_license_status() {
 		if ( isset( $_GET['_wpnonce'], $_GET['product_id'] ) ) {
 			if ( current_user_can( 'manage_options' ) ) {
 				if ( wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'vd-refresh-license-status' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 					$product_id = absint( $_GET['product_id'] );
 
-					if ( $product = VD()->get_product_by_id( $product_id ) ) {
+					if ( $product = Package::get_product_by_id( $product_id ) ) {
 						$product->refresh_expiration_date( true );
 					}
 
-					wp_safe_redirect( esc_url_raw( VD()->get_helper_url() ) );
+					wp_safe_redirect( esc_url_raw( Package::get_helper_url() ) );
 					exit();
 				}
 			}
 		}
 	}
 
-	public function plugins_api_filter( $result, $action, $args ) {
-		$products = VD()->get_products();
+	public static function plugins_api_filter( $result, $action, $args ) {
+		$products = Package::get_products();
 		$product  = false;
 
 		if ( ! isset( $args->slug ) ) {
@@ -72,7 +138,7 @@ class VD_Admin {
 			),
 		);
 
-		$api_result = VD()->api->info( $product );
+		$api_result = Package::get_api()->info( $product );
 
 		if ( $api_result ) {
 			$result = array_replace_recursive( $result, json_decode( wp_json_encode( $api_result ), true ) );
@@ -81,11 +147,11 @@ class VD_Admin {
 		return (object) $result;
 	}
 
-	public function set_upgrade_notice() {
+	public static function set_upgrade_notice() {
 		if ( 'update-core' === get_current_screen()->id ) {
 			$transient        = get_site_transient( 'update_plugins' );
 			$transient_themes = get_site_transient( 'update_themes' );
-			$products         = VD()->get_products();
+			$products         = Package::get_products();
 
 			if ( ! empty( $transient ) && isset( $transient->response ) ) {
 				foreach ( $transient->response as $plugin => $data ) {
@@ -95,7 +161,7 @@ class VD_Admin {
 						$product->refresh_expiration_date();
 
 						if ( $product->has_expired() && $product->supports_renewals() ) {
-							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->Name ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html__( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( VD()->get_helper_url() ) . '">' . esc_html__( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
+							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->Name ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html__( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( Package::get_helper_url() ) . '">' . esc_html__( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -109,7 +175,7 @@ class VD_Admin {
 						$product->refresh_expiration_date();
 
 						if ( $product->has_expired() && $product->supports_renewals() ) {
-							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->Name ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html__( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( VD()->get_helper_url() ) . '">' . esc_html__( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
+							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->Name ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html__( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( Package::get_helper_url() ) . '">' . esc_html__( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -117,16 +183,16 @@ class VD_Admin {
 		}
 	}
 
-	public function add_menu() {
-		$hook = add_dashboard_page( 'vendidero', 'vendidero', 'manage_options', 'vendidero', array( $this, 'screen' ) );
+	public static function add_menu() {
+		$hook = add_dashboard_page( 'vendidero', 'vendidero', 'manage_options', 'vendidero', array( __CLASS__, 'screen' ) );
 
-		add_action( 'load-' . $hook, array( $this, 'process' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'load-' . $hook, array( $this, 'license_refresh' ) );
+		add_action( 'load-' . $hook, array( __CLASS__, 'process' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
+		add_action( 'load-' . $hook, array( __CLASS__, 'license_refresh' ) );
 	}
 
-	public function license_refresh() {
-		$products = VD()->get_products( false );
+	public static function license_refresh() {
+		$products = Package::get_products( false );
 
 		if ( ! empty( $products ) ) {
 			$errors = array();
@@ -142,25 +208,25 @@ class VD_Admin {
 			}
 
 			if ( ! empty( $errors ) ) {
-				$this->add_notice( $errors, 'error' );
+				self::add_notice( $errors, 'error' );
 			}
 		}
 	}
 
-	public function get_notice_excluded_screens() {
+	public static function get_notice_excluded_screens() {
 		return array( 'index_page_vendidero-network', 'dashboard_page_vendidero', 'update-core-network', 'update-core' );
 	}
 
-	public function product_registered() {
+	public static function product_registered() {
 		$screen = get_current_screen();
 
-		if ( in_array( $screen->id, $this->get_notice_excluded_screens(), true ) ) {
+		if ( in_array( $screen->id, self::get_notice_excluded_screens(), true ) ) {
 			return;
 		}
 
-		$admin_url = VD()->get_helper_url();
+		$admin_url = Package::get_helper_url();
 
-		foreach ( VD()->get_products( false ) as $product ) {
+		foreach ( Package::get_products( false ) as $product ) {
 			if ( is_multisite() ) {
 				$blog_id = get_current_blog_id();
 
@@ -182,7 +248,7 @@ class VD_Admin {
 		}
 	}
 
-	public function screen() {
+	public static function screen() {
 		?>
 		<div class="vd-wrapper">
 			<div class="wrap about-wrap vendidero-wrap">
@@ -196,16 +262,16 @@ class VD_Admin {
 				</div>
 			</div>
 
-			<?php if ( VD()->api->ping() ) : ?>
-				<?php require_once VD()->plugin_path() . '/screens/screen-manage-licenses.php'; ?>
+			<?php if ( Package::get_api()->ping() ) : ?>
+				<?php require_once Package::get_path() . '/includes/screens/screen-manage-licenses.php'; ?>
 			<?php else : ?>
-				<?php require_once VD()->plugin_path() . '/screens/screen-api-unavailable.php'; ?>
+				<?php require_once Package::get_path() . '/includes/screens/screen-api-unavailable.php'; ?>
 			<?php endif; ?>
 		</div>
 		<?php
 	}
 
-	public function get_action( $actions = array() ) {
+	public static function get_action( $actions = array() ) {
 		foreach ( $actions as $action ) {
 			if ( ( isset( $_GET['action'] ) && $_GET['action'] === $action ) || ( isset( $_POST['action'] ) && $_POST['action'] === $action ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.Security.NonceVerification.Missing
 				return str_replace( 'vd_', '', $action );
@@ -215,12 +281,12 @@ class VD_Admin {
 		return false;
 	}
 
-	public function process() {
+	public static function process() {
 		if ( ! isset( $_GET['_wpnonce'] ) && ! isset( $_POST['_wpnonce'] ) ) {
 			return;
 		}
 
-		$action = $this->get_action( array( 'vd_register', 'vd_unregister' ) );
+		$action = self::get_action( array( 'vd_register', 'vd_unregister' ) );
 
 		if ( current_user_can( 'manage_options' ) ) {
 			if ( $action && wp_verify_nonce( ( isset( $_GET['_wpnonce'] ) ? wp_unslash( $_GET['_wpnonce'] ) : wp_unslash( $_POST['_wpnonce'] ) ), 'bulk_licenses' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -229,9 +295,9 @@ class VD_Admin {
 		}
 	}
 
-	public function process_register() {
+	public static function process_register() {
 		$errors   = array();
-		$products = VD()->get_products();
+		$products = Package::get_products();
 
 		if ( isset( $_POST['license_keys'] ) && 0 < count( $_POST['license_keys'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			foreach ( wp_unslash( $_POST['license_keys'] ) as $file => $key ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing
@@ -241,7 +307,7 @@ class VD_Admin {
 				if ( empty( $key ) || $products[ $file ]->is_registered() ) {
 					continue;
 				} else {
-					$response = VD()->api->register( $products[ $file ], $key );
+					$response = Package::get_api()->register( $products[ $file ], $key );
 
 					if ( is_wp_error( $response ) ) {
 						array_push( $errors, $response->get_error_message( $response->get_error_code() ) );
@@ -251,37 +317,37 @@ class VD_Admin {
 		}
 
 		if ( ! empty( $errors ) ) {
-			$this->add_notice( $errors, 'error' );
+			self::add_notice( $errors, 'error' );
 		}
 
-		VD()->api->flush_cache();
+		Package::get_api()->flush_cache();
 
-		wp_safe_redirect( esc_url_raw( VD()->get_helper_url() ) );
+		wp_safe_redirect( esc_url_raw( Package::get_helper_url() ) );
 		exit();
 	}
 
-	public function process_unregister() {
+	public static function process_unregister() {
 		$errors   = array();
-		$products = VD()->get_products();
+		$products = Package::get_products();
 		$file     = isset( $_GET['filepath'] ) ? sanitize_text_field( wp_unslash( $_GET['filepath'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		if ( isset( $products[ $file ] ) ) {
-			if ( ! VD()->api->unregister( $products[ $file ] ) ) {
+			if ( ! Package::get_api()->unregister( $products[ $file ] ) ) {
 				array_push( $errors, sprintf( __( 'Sorry, there was an error while unregistering %s', 'vendidero-helper' ), $products[ $file ]->Name ) );
 			}
 		}
 
 		if ( ! empty( $errors ) ) {
-			$this->add_notice( $errors, 'error' );
+			self::add_notice( $errors, 'error' );
 		}
 
-		VD()->api->flush_cache();
+		Package::get_api()->flush_cache();
 
-		wp_safe_redirect( esc_url_raw( VD()->get_helper_url() ) );
+		wp_safe_redirect( esc_url_raw( Package::get_helper_url() ) );
 		exit();
 	}
 
-	public function add_notice( $msg = array(), $type = 'error' ) {
+	public static function add_notice( $msg = array(), $type = 'error' ) {
 		set_transient(
 			'vendidero_helper_notices',
 			array(
@@ -292,31 +358,29 @@ class VD_Admin {
 		);
 	}
 
-	public function get_notices() {
+	public static function get_notices() {
 		return get_transient( 'vendidero_helper_notices' );
 	}
 
-	public function clean_notices() {
+	public static function clean_notices() {
 		return delete_transient( 'vendidero_helper_notices' );
 	}
 
-	public function print_notice() {
-		if ( $notices = $this->get_notices() ) {
+	public static function print_notice() {
+		if ( $notices = self::get_notices() ) {
 			echo '<div class="inline ' . esc_attr( $notices['type'] ) . '"><p>';
 			echo wp_kses_post( implode( '<br/>', $notices['msg'] ) );
 			echo '</p></div>';
 
-			$this->clean_notices();
+			self::clean_notices();
 		}
 	}
 
-	public function enqueue_scripts() {
-		wp_register_style( 'vp_admin', VD()->plugin_url() . '/assets/css/vd-admin.css', array(), VD()->version );
+	public static function enqueue_scripts() {
+		wp_register_style( 'vp_admin', Package::get_url() . '/assets/css/vd-admin.css', array(), Package::get_version() );
 		wp_enqueue_style( 'vp_admin' );
 
-		wp_register_script( 'vd_admin_js', VD()->plugin_url() . '/assets/js/vd-admin.js', array( 'jquery' ), VD()->version, true );
+		wp_register_script( 'vd_admin_js', Package::get_url() . '/assets/js/vd-admin.js', array( 'jquery' ), Package::get_version(), true );
 		wp_enqueue_script( 'vd_admin_js' );
 	}
 }
-
-return new VD_Admin();

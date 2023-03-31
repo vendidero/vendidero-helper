@@ -6,6 +6,7 @@ project.properties
 .project
 .settings*
 .idea
+.github
 
 # Grunt
 /node_modules/

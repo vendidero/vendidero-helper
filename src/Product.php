@@ -1,13 +1,17 @@
 <?php
 
-class VD_Product {
+namespace Vendidero\VendideroHelper;
+
+defined( 'ABSPATH' ) || exit;
+
+class Product {
 
 	public $file;
 	public $id;
 	public $slug;
 	public $free     = false;
 	public $theme    = false;
-	public $meta     = array();
+	protected $meta  = array();
 	public $updater  = null;
 	public $blog_ids = array();
 	public $expires;
@@ -16,13 +20,13 @@ class VD_Product {
 	private $key;
 
 	public function __construct( $file, $product_id, $args = array() ) {
-
 		$args = wp_parse_args(
 			$args,
 			array(
 				'free'              => false,
 				'blog_ids'          => array(),
 				'supports_renewals' => true,
+				'meta'              => array(),
 			)
 		);
 
@@ -37,15 +41,15 @@ class VD_Product {
 
 		if ( ! empty( $this->blog_ids ) ) {
 			foreach ( $this->blog_ids as $blog_id ) {
-				$this->home_url[] = VD()->sanitize_domain( get_home_url( $blog_id, '/' ) );
+				$this->home_url[] = Package::sanitize_domain( get_home_url( $blog_id, '/' ) );
 			}
 		} else {
-			$this->home_url[] = VD()->sanitize_domain( home_url( '/' ) );
+			$this->home_url[] = Package::sanitize_domain( home_url( '/' ) );
 		}
 
 		$this->home_url = array_values( array_unique( $this->home_url ) );
+		$this->get_meta_data();
 
-		$this->set_meta();
 		$this->slug = sanitize_title( $this->Name );
 		$registered = $this->get_options();
 
@@ -53,10 +57,20 @@ class VD_Product {
 			$this->key     = $registered[ $this->file ]['key'];
 			$this->expires = $registered[ $this->file ]['expires'];
 		}
+
+		if ( $this->is_registered() ) {
+			$this->updater = new Updater( $this );
+		}
 	}
 
-	public function set_meta() {
-		$this->meta = VD()->plugins[ $this->file ];
+	protected function get_meta_data() {
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			include_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
+		if ( function_exists( 'get_plugin_data' ) ) {
+			$this->meta = get_plugin_data( WP_PLUGIN_DIR . '/' . $this->file );
+		}
 	}
 
 	public function __get( $key ) {
@@ -97,7 +111,7 @@ class VD_Product {
 
 	public function refresh_expiration_date( $force = false ) {
 		if ( $this->is_registered() ) {
-			$expire = VD()->api->expiration_check( $this, $force );
+			$expire = Package::get_api()->expiration_check( $this, $force );
 
 			if ( ! is_wp_error( $expire ) ) {
 				$this->set_expiration_date( $expire );

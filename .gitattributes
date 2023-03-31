@@ -1,5 +1,6 @@
 /.* export-ignore
 /*.md export-ignore
+/.github export-ignore
 /node_modules* export-ignore
 /composer.* export-ignore
 /tests export-ignore

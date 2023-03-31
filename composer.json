@@ -1,8 +1,11 @@
 {
     "name": "vendidero/vendidero-helper",
-    "type": "wordpress-plugin",
     "description": "Will help vendidero users to manage their licenses and receive automatic updates",
-    "license": "GPL-2.0-or-later",
+    "license": "GPL-3.0-or-later",
+    "type": "wordpress-plugin",
+    "prefer-stable": true,
+    "version": "dev-main",
+    "prefer-dist": true,
     "authors": [
         {
             "name": "vendidero",
@@ -10,7 +13,8 @@
         }
     ],
     "require": {
-        "composer/installers": "^1.9 || ^2.0"
+        "composer/installers": "^1.9 || ^2.0",
+        "automattic/jetpack-autoloader": "^2.6.0"
     },
     "require-dev": {
         "phpunit/phpunit": "7.5.14",
@@ -20,11 +24,17 @@
     "minimum-stability": "dev",
     "config": {
         "optimize-autoloader": true,
+        "allow-plugins": true,
         "platform": {
-            "php": "7.1"
+            "php": "7.2"
         },
         "preferred-install": "dist",
         "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Vendidero\\VendideroHelper\\": "src"
+        }
     },
     "scripts": {
         "post-install-cmd": [

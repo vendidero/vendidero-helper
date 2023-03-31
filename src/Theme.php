@@ -1,6 +1,10 @@
 <?php
 
-class VD_Product_Theme extends VD_Product {
+namespace Vendidero\VendideroHelper;
+
+defined( 'ABSPATH' ) || exit;
+
+class Theme extends Product {
 
 	public function __construct( $file, $product_id, $args = array() ) {
 		parent::__construct( $file, $product_id, $args );
@@ -47,6 +51,12 @@ class VD_Product_Theme extends VD_Product {
 		return $registered;
 	}
 
+	protected function get_meta_data() {
+		if ( function_exists( 'wp_get_theme' ) ) {
+			$this->meta = wp_get_theme( $this->file );
+		}
+	}
+
 	public function __get( $key ) {
 		$value = parent::__get( $key );
 
@@ -65,10 +75,6 @@ class VD_Product_Theme extends VD_Product {
 		}
 
 		return $is;
-	}
-
-	public function set_meta() {
-		$this->meta = VD()->themes[ $this->file ];
 	}
 
 	public function get_url() {
