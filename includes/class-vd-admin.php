@@ -5,7 +5,6 @@ class VD_Admin {
 	public $notices = array();
 
 	public function __construct() {
-
 		if ( is_multisite() ) {
 			add_action( 'network_admin_menu', array( $this, 'add_menu' ) );
 		} else {

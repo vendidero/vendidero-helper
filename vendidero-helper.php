@@ -3,11 +3,11 @@
  * Plugin Name: vendidero Helper
  * Plugin URI: https://github.com/vendidero/vendidero-helper
  * Description: Manage your vendidero licenses and enjoy automatic updates.
- * Version: 2.1.6
+ * Version: 2.2.0
  * Author: vendidero
  * Author URI: https://vendidero.de
  * Requires at least: 3.8
- * Tested up to: 6.0
+ * Tested up to: 6.2
  * Network: True
  *
  * Text Domain: vendidero-helper
@@ -27,7 +27,7 @@ final class Vendidero_Helper {
 	 */
 	protected static $_instance = null;
 
-	public $version = '2.1.6';
+	public $version = '2.2.0';
 
 	/**
 	 * @var VD_API $api
@@ -75,6 +75,7 @@ final class Vendidero_Helper {
 		add_filter( 'cron_schedules', array( $this, 'set_weekly_schedule' ) );
 
 		register_activation_hook( __FILE__, array( $this, 'install' ) );
+		register_deactivation_hook( __FILE__, array( $this, 'deactivate' ) );
 
 		// Hooks
 		add_action( 'plugins_loaded', array( $this, 'load_plugin_textdomain' ) );
@@ -83,7 +84,6 @@ final class Vendidero_Helper {
 			$this->init();
 		}
 
-		add_action( 'vendidero_cron', array( $this, 'expire_cron' ), 0 );
 		add_action( 'deactivated_plugin', array( $this, 'plugin_action' ) );
 		add_action( 'activated_plugin', array( $this, 'plugin_action' ) );
 		add_action( 'http_request_args', array( $this, 'ssl_verify' ), 10, 2 );
@@ -96,6 +96,34 @@ final class Vendidero_Helper {
 		add_action( 'delete_site_transient_update_plugins', array( $this, 'flush_cache' ) );
 		add_action( 'delete_site_transient_update_themes', array( $this, 'flush_cache' ) );
 		add_action( 'automatic_updates_complete', array( $this, 'flush_cache' ) );
+
+		add_action( 'init', array( $this, 'setup_recurring_actions' ), 10 );
+		add_action( 'vd_helper_daily', array( $this, 'expire_cron' ) );
+
+		add_action( 'vendidero_cron', array( $this, 'maybe_run_fallback_cron' ), 0 );
+	}
+
+	public function maybe_run_fallback_cron() {
+		if ( ! function_exists( 'as_next_scheduled_action' ) || false === as_next_scheduled_action( 'vd_helper_daily', array(), 'vd_helper' ) ) {
+			$this->expire_cron();
+		}
+	}
+
+	public function setup_recurring_actions() {
+		if ( ! function_exists( 'as_next_scheduled_action' ) ) {
+			return;
+		}
+
+		if ( false === as_next_scheduled_action( 'vd_helper_daily', array(), 'vd_helper' ) ) {
+			$timestamp = strtotime( 'tomorrow midnight' );
+			$date      = new \DateTime();
+
+			$date->setTimestamp( $timestamp );
+			$date->modify( '+3 hours' );
+
+			as_unschedule_all_actions( 'vd_helper_daily', array(), 'vd_helper' );
+			as_schedule_recurring_action( $date->getTimestamp(), DAY_IN_SECONDS, 'vd_helper_daily', array(), 'vd_helper' );
+		}
 	}
 
 	public function flush_cache() {
@@ -384,6 +412,14 @@ final class Vendidero_Helper {
 			foreach ( $themes as $theme ) {
 				$this->themes[ basename( $theme->__get( 'stylesheet_dir' ) ) . '/style.css' ] = $theme;
 			}
+		}
+	}
+
+	public function deactivate() {
+		wp_clear_scheduled_hook( 'vendidero_cron' );
+
+		if ( function_exists( 'as_unschedule_all_actions' ) ) {
+			as_unschedule_all_actions( 'vd_helper_daily', array(), 'vd_helper' );
 		}
 	}
 
