@@ -6,18 +6,18 @@ defined( 'ABSPATH' ) || exit;
 
 class Product {
 
+	protected $options = null;
+
 	public $file;
 	public $id;
 	public $slug;
-	public $free     = false;
-	public $theme    = false;
-	protected $meta  = array();
-	public $updater  = null;
-	public $blog_ids = array();
-	public $expires;
+	public $free              = false;
+	public $theme             = false;
+	protected $meta           = array();
+	public $updater           = null;
+	public $blog_ids          = array();
 	public $home_url          = array();
 	public $supports_renewals = true;
-	private $key;
 
 	public function __construct( $file, $product_id, $args = array() ) {
 		$args = wp_parse_args(
@@ -35,8 +35,6 @@ class Product {
 		$this->free              = $args['free'];
 		$this->blog_ids          = $args['blog_ids'];
 		$this->supports_renewals = $args['supports_renewals'];
-		$this->key               = '';
-		$this->expires           = '';
 		$this->home_url          = array();
 
 		if ( ! empty( $this->blog_ids ) ) {
@@ -51,12 +49,6 @@ class Product {
 		$this->get_meta_data();
 
 		$this->slug = sanitize_title( $this->Name );
-		$registered = $this->get_options();
-
-		if ( isset( $registered[ $this->file ] ) ) {
-			$this->key     = $registered[ $this->file ]['key'];
-			$this->expires = $registered[ $this->file ]['expires'];
-		}
 
 		if ( $this->is_registered() ) {
 			$this->updater = new Updater( $this );
@@ -74,6 +66,12 @@ class Product {
 	}
 
 	public function __get( $key ) {
+		if ( 'key' === $key ) {
+			return $this->get_key();
+		} elseif ( 'expires' === $key ) {
+			return $this->get_expires();
+		}
+
 		return ( isset( $this->meta[ $key ] ) ? $this->meta[ $key ] : false );
 	}
 
@@ -97,16 +95,33 @@ class Product {
 		return $this->free;
 	}
 
-	public function get_renewal_url() {
-		return $this->get_url() . '?renew=true&license=' . $this->key;
+	public function get_renewal_url( $blog_id = null ) {
+		return $this->get_url() . '?renew=true&license=' . $this->get_key( $blog_id );
 	}
 
 	public function supports_renewals() {
 		return $this->is_free() ? false : $this->supports_renewals;
 	}
 
-	public function is_registered() {
-		return ( ( ! empty( $this->key ) || $this->is_free() ) ? true : false );
+	public function is_registered( $blog_id = null ) {
+		if ( $this->is_free() ) {
+			return true;
+		}
+
+		if ( is_null( $blog_id ) && ! empty( $this->blog_ids ) ) {
+			$is_registered = true;
+
+			foreach ( $this->blog_ids as $blog_id ) {
+				if ( ! $this->is_registered( $blog_id ) ) {
+					$is_registered = false;
+					break;
+				}
+			}
+
+			return $is_registered;
+		} else {
+			return $this->get_key( $blog_id ) ? true : false;
+		}
 	}
 
 	public function refresh_expiration_date( $force = false ) {
@@ -129,105 +144,181 @@ class Product {
 		delete_transient( "_vendidero_helper_expiry_{$this->id}" );
 	}
 
-	public function get_expiration_date( $format = 'd.m.Y' ) {
-		if ( ! $this->is_registered() || empty( $this->expires ) ) {
+	public function get_expiration_date( $format = 'd.m.Y', $blog_id = null ) {
+		if ( ! $this->is_registered( $blog_id ) || ! $this->get_expires( $blog_id ) ) {
 			return false;
 		}
 
-		$date = $this->expires;
+		$date = $this->get_expires( $blog_id );
 
 		return ( ! $format ? $date : date( $format, strtotime( $date ) ) ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 	}
 
-	public function has_expired() {
-		if ( ! $this->is_registered() || empty( $this->expires ) ) {
-			return false;
-		}
+	public function has_expired( $blog_id = null ) {
+		if ( is_null( $blog_id ) && ! empty( $this->blog_ids ) ) {
+			$has_expired = false;
 
-		if ( ( strtotime( $this->expires ) < time() ) ) {
-			return true;
+			foreach ( $this->blog_ids as $blog_id ) {
+				if ( $this->has_expired( $blog_id ) ) {
+					$has_expired = true;
+					break;
+				}
+			}
+
+			return $has_expired;
+		} else {
+			if ( ! $this->is_registered( $blog_id ) || ! $this->get_expires( $blog_id ) ) {
+				return false;
+			}
+
+			if ( ( strtotime( $this->get_expires( $blog_id ) ) < time() ) ) {
+				return true;
+			}
 		}
 
 		return false;
 	}
 
-	protected function get_options() {
-		if ( is_multisite() ) {
-			return get_site_option( 'vendidero_registered', array() );
-		} else {
-			return get_option( 'vendidero_registered', array() );
-		}
-	}
-
-	protected function update_options( $data ) {
-		if ( is_multisite() ) {
-			return update_site_option( 'vendidero_registered', $data );
-		} else {
-			return update_option( 'vendidero_registered', $data );
-		}
-	}
-
-	public function register( $key, $expires = '' ) {
-		$registered = $this->get_options();
-
-		if ( ! isset( $registered[ $this->file ] ) ) {
-			$registered[ $this->file ] = array(
-				'key'     => md5( $key ),
-				'expires' => $expires,
-			);
-			$this->expires             = $registered[ $this->file ]['expires'];
-			$this->key                 = $registered[ $this->file ]['key'];
-		}
-
-		$this->update_options( $registered );
-	}
-
-	public function set_expiration_date( $expires ) {
-		$registered = $this->get_options();
-
-		if ( isset( $registered[ $this->file ] ) ) {
-			$registered[ $this->file ]['expires'] = $expires;
-			$this->expires                        = $registered[ $this->file ]['expires'];
-		}
-
-		$this->update_options( $registered );
-	}
-
-	public function unregister() {
-		$registered = $this->get_options();
-
-		if ( isset( $registered[ $this->file ] ) ) {
-			unset( $registered[ $this->file ] );
-
-			$this->key     = '';
-			$this->expires = '';
-		}
-
-		if ( ! empty( $registered ) ) {
-			foreach ( $registered as $key => $val ) {
-
-				if ( is_numeric( $key ) ) {
-					unset( $registered[ $key ] );
+	public function get_expired_blog_id() {
+		if ( ! empty( $this->blog_ids ) ) {
+			foreach ( $this->blog_ids as $blog_id ) {
+				if ( $this->has_expired( $blog_id ) ) {
+					return $blog_id;
 				}
 			}
 		}
 
-		$this->update_options( array_filter( $registered ) );
+		return null;
+	}
+
+	protected function get_options( $blog_id = null ) {
+		$default_options = array(
+			'key'     => '',
+			'expires' => null,
+		);
+
+		if ( is_null( $blog_id ) ) {
+			if ( is_null( $this->options ) ) {
+				$this->options = get_option( 'vendidero_registered', array() );
+			}
+
+			$options = $this->options;
+		} else {
+			$options = get_blog_option( $blog_id, 'vendidero_registered', array() );
+		}
+
+		if ( isset( $options[ $this->file ] ) ) {
+			return wp_parse_args( $options[ $this->file ], $default_options );
+		}
+
+		return $default_options;
+	}
+
+	protected function update_options( $data, $blog_id = null ) {
+		$data = wp_parse_args(
+			$data,
+			array(
+				'key'     => '',
+				'expires' => null,
+			)
+		);
+
+		if ( is_null( $blog_id ) ) {
+			$options = get_option( 'vendidero_registered', array() );
+		} else {
+			$options = get_blog_option( $blog_id, 'vendidero_registered', array() );
+		}
+
+		$options[ $this->file ] = $data;
+		$this->options          = null;
+
+		if ( is_null( $blog_id ) ) {
+			return update_option( 'vendidero_registered', $options );
+		} else {
+			return update_blog_option( $blog_id, 'vendidero_registered', $options );
+		}
+	}
+
+	public function register( $key, $expires = '' ) {
+		$registered = array(
+			'key'     => md5( $key ),
+			'expires' => $expires,
+		);
+
+		$this->update_options( $registered );
+	}
+
+	public function set_expiration_date( $expires, $blog_id = null ) {
+		$options            = $this->get_options( $blog_id );
+		$options['expires'] = $expires;
+
+		$this->update_options( $options, $blog_id );
+	}
+
+	public function unregister() {
+		$registered = get_option( 'vendidero_registered', array() );
+
+		if ( isset( $registered[ $this->file ] ) ) {
+			unset( $registered[ $this->file ] );
+		}
+
+		$this->options = null;
+
+		update_option( 'vendidero_registered', array_filter( $registered ) );
 	}
 
 	public function get_home_url() {
 		return $this->home_url;
 	}
 
-	public function get_key() {
-		if ( ! $this->is_registered() ) {
-			return false;
+	public function get_expires( $blog_id = null ) {
+		if ( $this->is_free() ) {
+			return null;
 		}
 
+		if ( is_null( $blog_id ) && ! empty( $this->blog_ids ) ) {
+			$expires = 0;
+
+			foreach ( $this->blog_ids as $blog_id ) {
+				$blog_expires = strtotime( $this->get_expires( $blog_id ) );
+
+				if ( false !== $blog_expires && $blog_expires > $expires ) {
+					$expires = $blog_expires;
+				}
+			}
+
+			return $expires;
+		} else {
+			$options = $this->get_options( $blog_id );
+
+			return $options['expires'];
+		}
+	}
+
+	public function get_key( $blog_id = null ) {
 		if ( $this->is_free() ) {
 			return '';
 		}
 
-		return $this->key;
+		if ( is_null( $blog_id ) && ! empty( $this->blog_ids ) ) {
+			$key     = '';
+			$expires = 0;
+
+			foreach ( $this->blog_ids as $blog_id ) {
+				$blog_key     = $this->get_key( $blog_id );
+				$blog_expires = strtotime( $this->get_expires( $blog_id ) );
+
+				if ( ! empty( $blog_key ) && ( '' === $key || ( false !== $blog_expires && $blog_expires > $expires ) ) ) {
+					$key     = $blog_key;
+					$expires = $blog_expires;
+				}
+			}
+
+			return $key;
+		} else {
+			$options = $this->get_options( $blog_id );
+
+			return $options['key'];
+		}
 	}
 }

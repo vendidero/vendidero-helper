@@ -9,7 +9,7 @@ class Updater {
 	protected $product;
 	protected $notices = array();
 
-	public function __construct( Product $product ) {
+	public function __construct( $product ) {
 		$this->product = $product;
 
 		// Check For Updates

@@ -8,7 +8,6 @@
  * Author URI: https://vendidero.de
  * Requires at least: 3.8
  * Tested up to: 6.2
- * Network: True
  *
  * Text Domain: vendidero-helper
  * Domain Path: /i18n/

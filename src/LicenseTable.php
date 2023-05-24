@@ -144,7 +144,7 @@ class LicenseTable extends \WP_List_Table {
 		$response = '';
 
 		if ( $item->is_registered() ) {
-			$base_url = ( is_multisite() ) ? network_admin_url( 'index.php' ) : admin_url( 'index.php' );
+			$base_url = admin_url( 'index.php' );
 
 			$unregister_url = wp_nonce_url( add_query_arg( 'action', 'vd_unregister', add_query_arg( 'filepath', $item->file, add_query_arg( 'page', 'vendidero', $base_url ) ) ), 'bulk_licenses' );
 			$response       = '<a href="' . esc_url( $unregister_url ) . '">' . __( 'Unregister', 'vendidero-helper' ) . '</a>' . "\n";

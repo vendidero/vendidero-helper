@@ -253,16 +253,17 @@ class Package {
 	}
 
 	protected static function register_products() {
-		$product_data      = apply_filters( 'vendidero_updateable_products', array() );
-		$products          = array();
-		$available_plugins = self::get_available_plugins();
-		$available_themes  = self::get_available_themes();
+		$product_data = apply_filters( 'vendidero_updateable_products', array() );
+		$products     = array();
 
 		foreach ( $product_data as $product ) {
 			$products[ $product->file ] = $product;
 		}
 
-		if ( is_multisite() ) {
+		if ( is_multisite() && is_network_admin() ) {
+			$available_plugins = self::get_available_plugins();
+			$available_themes  = self::get_available_themes();
+
 			foreach ( get_sites(
 				array(
 					'public'   => 1,
@@ -271,7 +272,7 @@ class Package {
 					'archived' => 0,
 				)
 			) as $site ) {
-				$plugins = get_blog_option( $site->blog_id, 'active_plugins' );
+				$plugins = array_merge( (array) get_blog_option( $site->blog_id, 'active_plugins', array() ), array_keys( (array) get_site_option( 'active_sitewide_plugins', array() ) ) );
 				$theme   = get_blog_option( $site->blog_id, 'stylesheet' );
 
 				if ( ! empty( $plugins ) ) {
@@ -349,8 +350,8 @@ class Package {
 						$product->file,
 						$product->product_id,
 						array(
-							'blog_ids'          => isset( $product->blog_ids ) ? $product->blog_ids : array(),
 							'supports_renewals' => isset( $product->supports_renewals ) ? $product->supports_renewals : true,
+							'blog_ids'          => isset( $product->blog_ids ) ? $product->blog_ids : array(),
 						)
 					);
 				}
@@ -466,12 +467,16 @@ class Package {
 		return $args;
 	}
 
-	public static function get_helper_url() {
-		return is_multisite() ? network_admin_url( 'index.php?page=vendidero' ) : admin_url( 'index.php?page=vendidero' );
+	public static function get_helper_url( $blog_id = null ) {
+		if ( is_null( $blog_id ) ) {
+			return admin_url( 'index.php?page=vendidero' );
+		} else {
+			return get_admin_url( $blog_id, 'index.php?page=vendidero' );
+		}
 	}
 
-	public static function get_admin_url() {
-		return self::get_helper_url();
+	public static function get_admin_url( $blog_id = null ) {
+		return self::get_helper_url( $blog_id );
 	}
 
 	public static function get_api_url() {

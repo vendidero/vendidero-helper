@@ -2,6 +2,10 @@
 
 <div class="wrap about-wrap table-wrap">
 	<div class="col-wrap">
+		<div class="vd-notice-wrapper">
+			<?php do_action( 'vd_admin_notices' ); ?>
+		</div>
+
 		<form id="register" method="post" action="" class="validate">
 			<input type="hidden" name="action" value="vd_register" />
 			<input type="hidden" name="page" value="vendidero" />

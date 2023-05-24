@@ -6,15 +6,10 @@ defined( 'ABSPATH' ) || exit;
 
 class Admin {
 	public static function init() {
-		add_action( 'admin_init', array( __CLASS__, 'network_install_check' ), 0 );
 		add_action( 'admin_init', array( __CLASS__, 'check_notice_hide' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'expire_notice' ), 0 );
-
-		if ( is_multisite() ) {
-			add_action( 'network_admin_menu', array( __CLASS__, 'add_menu' ) );
-		} else {
-			add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
-		}
+		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
 
 		add_action( 'vd_process_register', array( __CLASS__, 'process_register' ) );
 		add_action( 'vd_process_unregister', array( __CLASS__, 'process_unregister' ) );
@@ -36,58 +31,66 @@ class Admin {
 		}
 	}
 
-	public static function expire_notice() {
-		if ( get_option( 'vendidero_notice_expire' ) ) {
-			$screen = get_current_screen();
+	protected static function maybe_output_expire_notice( $blog_id = null ) {
+		// Check whether license has been renewed already
+		$products     = $blog_id ? get_blog_option( $blog_id, 'vendidero_notice_expire' ) : get_option( 'vendidero_notice_expire' );
+		$new_products = array();
 
-			if ( in_array( $screen->id, self::get_notice_excluded_screens(), true ) ) {
-				return;
-			}
+		foreach ( $products as $key => $val ) {
+			if ( $product = Package::get_product( $key ) ) {
+				if ( $product->supports_renewals() ) {
+					if ( $expire = $product->get_expiration_date( false ) ) {
+						$diff = Package::get_date_diff( date( 'Y-m-d' ), $expire ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 
-			// Check whether license has been renewed already
-			$products     = get_option( 'vendidero_notice_expire' );
-			$new_products = array();
-
-			foreach ( $products as $key => $val ) {
-				if ( $product = Package::get_product( $key ) ) {
-					if ( $product->supports_renewals() ) {
-						if ( $expire = $product->get_expiration_date( false ) ) {
-							$diff = Package::get_date_diff( date( 'Y-m-d' ), $expire ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-
-							if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
-								$new_products[ $key ] = true;
-							}
+						if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
+							$new_products[ $key ] = true;
 						}
 					}
 				}
 			}
+		}
 
-			if ( ! empty( $new_products ) ) {
+		if ( ! empty( $new_products ) ) {
+			if ( $blog_id ) {
+				update_blog_option( $blog_id, 'vendidero_notice_expire', $new_products );
+			} else {
 				update_option( 'vendidero_notice_expire', $new_products );
-				include_once Package::get_path() . '/includes/screens/screen-notice-expire.php';
+			}
+
+			include_once Package::get_path() . '/includes/screens/screen-notice-expire.php';
+		} else {
+			if ( $blog_id ) {
+				delete_blog_option( $blog_id, 'vendidero_notice_expire' );
 			} else {
 				delete_option( 'vendidero_notice_expire' );
 			}
 		}
 	}
 
-	public static function network_install_check() {
-		// If multisite, plugin must be network activated. First make sure the is_plugin_active_for_network function exists
-		if ( is_multisite() && ! is_network_admin() ) {
-			remove_action( 'admin_notices', 'vendidero_helper_notice' );
+	public static function expire_notice() {
+		if ( is_multisite() && is_network_admin() ) {
+			$screen = get_current_screen();
 
-			if ( ! function_exists( 'is_plugin_active_for_network' ) ) {
-				require_once ABSPATH . '/wp-admin/includes/plugin.php';
+			if ( in_array( $screen->id, self::get_notice_excluded_screens(), true ) ) {
+				return;
 			}
 
-			if ( ! is_plugin_active_for_network( plugin_basename( __FILE__ ) ) ) {
-				add_action( 'admin_notices', array( __CLASS__, 'admin_notice_require_network_activation' ) );
+			foreach ( Package::get_products( false ) as $product ) {
+				foreach ( $product->get_blog_ids() as $blog_id ) {
+					if ( get_blog_option( $blog_id, 'vendidero_notice_expire' ) ) {
+						self::maybe_output_expire_notice( $blog_id );
+					}
+				}
 			}
+		} elseif ( get_option( 'vendidero_notice_expire' ) ) {
+			$screen = get_current_screen();
+
+			if ( in_array( $screen->id, self::get_notice_excluded_screens(), true ) ) {
+				return;
+			}
+
+			self::maybe_output_expire_notice();
 		}
-	}
-
-	public static function admin_notice_require_network_activation() {
-		echo '<div class="error"><p>' . esc_html__( 'vendidero Helper must be network activated when in multisite environment.', 'vendidero-helper' ) . '</p></div>';
 	}
 
 	public static function refresh_license_status() {
@@ -148,20 +151,19 @@ class Admin {
 	}
 
 	public static function set_upgrade_notice() {
-		if ( 'update-core' === get_current_screen()->id ) {
+		if ( in_array( get_current_screen()->id, array( 'update-core', 'update-core-network' ), true ) ) {
 			$transient        = get_site_transient( 'update_plugins' );
 			$transient_themes = get_site_transient( 'update_themes' );
 			$products         = Package::get_products();
 
 			if ( ! empty( $transient ) && isset( $transient->response ) ) {
 				foreach ( $transient->response as $plugin => $data ) {
-
 					if ( isset( $products[ $plugin ] ) ) {
 						$product = $products[ $plugin ];
 						$product->refresh_expiration_date();
 
-						if ( $product->has_expired() && $product->supports_renewals() ) {
-							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->Name ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html__( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( Package::get_helper_url() ) . '">' . esc_html__( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
+						if ( $product->supports_renewals() && $product->has_expired() ) {
+							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->file ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html__( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( Package::get_helper_url( $product->get_expired_blog_id() ) ) . '">' . esc_html__( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -169,13 +171,12 @@ class Admin {
 
 			if ( ! empty( $transient_themes ) && isset( $transient_themes->response ) ) {
 				foreach ( $transient_themes->response as $theme => $data ) {
-
 					if ( isset( $data['theme'] ) && isset( $products[ $data['theme'] ] ) ) {
 						$product = $products[ $data['theme'] ];
 						$product->refresh_expiration_date();
 
-						if ( $product->has_expired() && $product->supports_renewals() ) {
-							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->Name ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html__( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( Package::get_helper_url() ) . '">' . esc_html__( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
+						if ( $product->supports_renewals() && $product->has_expired() ) {
+							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->file ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html__( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( Package::get_helper_url( $product->get_expired_blog_id() ) ) . '">' . esc_html__( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -187,7 +188,6 @@ class Admin {
 		$hook = add_dashboard_page( 'vendidero', 'vendidero', 'manage_options', 'vendidero', array( __CLASS__, 'screen' ) );
 
 		add_action( 'load-' . $hook, array( __CLASS__, 'process' ) );
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
 		add_action( 'load-' . $hook, array( __CLASS__, 'license_refresh' ) );
 	}
 
@@ -227,23 +227,37 @@ class Admin {
 		$admin_url = Package::get_helper_url();
 
 		foreach ( Package::get_products( false ) as $product ) {
-			if ( is_multisite() ) {
-				$blog_id = get_current_blog_id();
+			if ( is_multisite() && is_network_admin() ) {
+				foreach ( $product->get_blog_ids() as $blog_id ) {
+					$admin_url = Package::get_helper_url( $blog_id );
+					$blog_info = get_blog_details( $blog_id );
 
-				if ( ! in_array( $blog_id, $product->get_blog_ids(), true ) && ! is_network_admin() ) {
-					continue;
+					if ( ! $product->is_registered( $blog_id ) ) {
+						?>
+						<div class="error">
+							<p><?php printf( esc_html__( 'Your %1$s license for %2$s doesn\'t seem to be registered. Please %3$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $blog_info->blogname ), '<a style="margin-left: 5px;" class="button button-secondary" href="' . esc_url( $admin_url ) . '">' . esc_html__( 'manage your licenses', 'vendidero-helper' ) . '</a>' ); ?></p>
+						</div>
+						<?php
+					} elseif ( $product->supports_renewals() && $product->has_expired( $blog_id ) ) {
+						?>
+						<div class="error">
+							<p><?php printf( esc_html__( 'Your %1$s license for %2$s has expired on %3$s. %4$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $blog_info->blogname ), esc_html( $product->get_expiration_date( get_option( 'date_format' ), $blog_id ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url( $blog_id ) ) . '">' . esc_html__( 'renew now', 'vendidero-helper' ) . '</a>' ); ?></p>
+						</div>
+						<?php
+					}
 				}
-			}
-
-			if ( ! $product->is_registered() ) { ?>
-				<div class="error">
-					<p><?php printf( esc_html__( 'Your %1$s license doesn\'t seem to be registered. Please %2$s', 'vendidero-helper' ), esc_attr( $product->Name ), '<a style="margin-left: 5px;" class="button button-secondary" href="' . esc_url( $admin_url ) . '">' . esc_html__( 'manage your licenses', 'vendidero-helper' ) . '</a>' ); ?></p>
-				</div>
-			<?php } elseif ( $product->has_expired() && $product->supports_renewals() ) { ?>
-				<div class="error">
-					<p><?php printf( esc_html__( 'Your %1$s license has expired on %2$s. %3$s %4$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $product->get_expiration_date( get_option( 'date_format' ) ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url() ) . '">' . esc_html__( 'renew now', 'vendidero-helper' ) . '</a>', '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $product->id ) ), 'vd-refresh-license-status' ) ) . '" class="" style="margin-left: 1em;">' . esc_html__( 'Already renewed?', 'vendidero-helper' ) . '</a>' ); ?></p>
-				</div>
-				<?php
+			} else {
+				if ( ! $product->is_registered() ) {
+					?>
+					<div class="error">
+						<p><?php printf( esc_html__( 'Your %1$s license doesn\'t seem to be registered. Please %2$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', '<a style="margin-left: 5px;" class="button button-secondary" href="' . esc_url( $admin_url ) . '">' . esc_html__( 'manage your licenses', 'vendidero-helper' ) . '</a>' ); ?></p>
+					</div>
+				<?php } elseif ( $product->has_expired() && $product->supports_renewals() ) { ?>
+					<div class="error">
+						<p><?php printf( esc_html__( 'Your %1$s license has expired on %2$s. %3$s %4$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $product->get_expiration_date( get_option( 'date_format' ) ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url() ) . '">' . esc_html__( 'renew now', 'vendidero-helper' ) . '</a>', '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $product->id ) ), 'vd-refresh-license-status' ) ) . '" class="" style="margin-left: 1em;">' . esc_html__( 'Already renewed?', 'vendidero-helper' ) . '</a>' ); ?></p>
+					</div>
+					<?php
+				}
 			}
 		}
 	}
@@ -257,8 +271,6 @@ class Admin {
 					<div class="about-text vendidero-updater-about-text">
 						<?php esc_html_e( 'Easily manage your licenses for vendidero Products and enjoy automatic updates & more.', 'vendidero-helper' ); ?>
 					</div>
-
-					<?php do_action( 'vd_admin_notices' ); ?>
 				</div>
 			</div>
 
@@ -371,16 +383,29 @@ class Admin {
 			echo '<div class="inline ' . esc_attr( $notices['type'] ) . '"><p>';
 			echo wp_kses_post( implode( '<br/>', $notices['msg'] ) );
 			echo '</p></div>';
-
 			self::clean_notices();
 		}
 	}
 
 	public static function enqueue_scripts() {
-		wp_register_style( 'vp_admin', Package::get_url() . '/assets/css/vd-admin.css', array(), Package::get_version() );
-		wp_enqueue_style( 'vp_admin' );
+		$screen    = get_current_screen();
+		$screen_id = $screen ? $screen->id : '';
+		$screens   = array(
+			'update-core-network',
+			'update-core',
+			'plugins-network',
+			'plugins',
+			'themes-network',
+			'themes',
+			'dashboard_page_vendidero',
+		);
 
-		wp_register_script( 'vd_admin_js', Package::get_url() . '/assets/js/vd-admin.js', array( 'jquery' ), Package::get_version(), true );
-		wp_enqueue_script( 'vd_admin_js' );
+		if ( in_array( $screen_id, $screens, true ) ) {
+			wp_register_style( 'vp_admin', Package::get_url() . '/assets/css/vd-admin.css', array(), Package::get_version() );
+			wp_enqueue_style( 'vp_admin' );
+
+			wp_register_script( 'vd_admin_js', Package::get_url() . '/assets/js/vd-admin.js', array( 'jquery' ), Package::get_version(), true );
+			wp_enqueue_script( 'vd_admin_js' );
+		}
 	}
 }
