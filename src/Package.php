@@ -21,10 +21,14 @@ class Package {
 	 */
 	private static $products = null;
 
+	private static $is_integration = false;
+
 	/**
 	 * Init the package
 	 */
-	public static function init() {
+	public static function init( $is_integration = false ) {
+		self::$is_integration = $is_integration;
+
 		include_once self::get_path() . '/includes/vd-core-functions.php';
 
 		add_action( 'init', array( __CLASS__, 'load_plugin_textdomain' ) );
@@ -529,18 +533,11 @@ class Package {
 	public static function install() {
 		self::init();
 
-		update_option( 'vendidero_version', self::get_version() );
-
-		wp_clear_scheduled_hook( 'vendidero_cron' );
-		wp_schedule_event( time(), 'daily', 'vendidero_cron' );
+		Install::install();
 	}
 
 	public static function deactivate() {
-		wp_clear_scheduled_hook( 'vendidero_cron' );
-
-		if ( function_exists( 'as_unschedule_all_actions' ) ) {
-			as_unschedule_all_actions( 'vd_helper_daily', array(), 'vd_helper' );
-		}
+		Install::deactivate();
 	}
 
 	public static function install_integration() {
@@ -548,7 +545,7 @@ class Package {
 	}
 
 	public static function is_integration() {
-		return class_exists( 'WooCommerce_Germanized_Pro' );
+		return self::$is_integration;
 	}
 
 	/**
