@@ -74,12 +74,38 @@ span.vd-inline-upgrade-expire-notice {
 	width: 30ch;
 }
 
+table.licenses thead th, table.licenses tfoot th {
+	padding: 0.75em 1em;
+	width: 12ch;
+	vertical-align: middle;
+}
+
+table.licenses thead th.column-product_status, table.licenses tfoot th.column-product_status {
+	width: 15ch;
+}
+
+table.licenses thead th.column-product_version, table.licenses tfoot th.column-product_version {
+	width: 20ch;
+}
+
+table.licenses tbody td {
+	vertical-align: middle;
+}
+
+table.licenses tbody p {
+	margin-bottom: 2px;
+}
+
+table.licenses .column-product_version, table.licenses .column-product_expires {
+	text-align: center;
+}
+
 table.licenses td.product_expires, table.licenses th.product_expires {
 	text-align: center;
 }
 
 table.licenses td.product_expires a.refresh-expiration {
-	margin-top: 5px;
+	margin-top: 2px;
 	font-size: 11px;
 	display: block;
 	color: #50575e;

@@ -31,7 +31,10 @@ class Package {
 
 		include_once self::get_path() . '/includes/vd-core-functions.php';
 
-		add_action( 'init', array( __CLASS__, 'load_plugin_textdomain' ) );
+		if ( ! self::is_integration() ) {
+			add_action( 'init', array( __CLASS__, 'maybe_update' ), 10 );
+			add_action( 'init', array( __CLASS__, 'load_plugin_textdomain' ) );
+		}
 
 		add_action( 'deactivated_plugin', array( __CLASS__, 'on_plugin_action' ) );
 		add_action( 'activated_plugin', array( __CLASS__, 'on_plugin_action' ) );
@@ -528,6 +531,12 @@ class Package {
 		unload_textdomain( $domain );
 		load_textdomain( $domain, trailingslashit( WP_LANG_DIR ) . $domain . '/' . $domain . '-' . $locale . '.mo' );
 		load_plugin_textdomain( $domain, false, plugin_basename( self::get_path() ) . '/i18n/' );
+	}
+
+	public static function maybe_update() {
+		if ( ! defined( 'IFRAME_REQUEST' ) && Install::get_current_version() !== self::get_version() ) {
+			self::install();
+		}
 	}
 
 	public static function install() {

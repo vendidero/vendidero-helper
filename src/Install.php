@@ -6,11 +6,27 @@ defined( 'ABSPATH' ) || exit;
 
 class Install {
 
-	public static function install() {
-		$current_version = get_option( 'vendidero_version', null );
-		$legacy_version  = is_multisite() ? get_site_option( 'vendidero_version', null ) : $current_version;
+	public static function get_current_version() {
+		return is_multisite() ? get_site_option( 'vendidero_version', null ) : get_option( 'vendidero_version', null );
+	}
 
-		if ( ! empty( $legacy_version ) && version_compare( $legacy_version, '2.2.0', '<' ) ) {
+	public static function install() {
+		self::update();
+
+		wp_clear_scheduled_hook( 'vendidero_cron' );
+		wp_schedule_event( time(), 'daily', 'vendidero_cron' );
+
+		if ( is_multisite() ) {
+			update_site_option( 'vendidero_version', Package::get_version() );
+		} else {
+			update_option( 'vendidero_version', Package::get_version() );
+		}
+	}
+
+	public static function update() {
+		$current_version = self::get_current_version();
+
+		if ( ! empty( $current_version ) && version_compare( $current_version, '2.2.0', '<' ) ) {
 			/**
 			 * Copy network-wide license data to each (active) site.
 			 */
@@ -51,11 +67,6 @@ class Install {
 				}
 			}
 		}
-
-		wp_clear_scheduled_hook( 'vendidero_cron' );
-		wp_schedule_event( time(), 'daily', 'vendidero_cron' );
-
-		update_option( 'vendidero_version', Package::get_version() );
 	}
 
 	public static function deactivate() {

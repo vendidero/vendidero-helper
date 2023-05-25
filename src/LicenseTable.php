@@ -62,6 +62,10 @@ class LicenseTable extends \WP_List_Table {
 		return $columns;
 	}
 
+	protected function get_table_classes() {
+		return array_merge( parent::get_table_classes(), array( 'posts' ) );
+	}
+
 	/**
 	 * @param Product $item
 	 *
@@ -120,7 +124,7 @@ class LicenseTable extends \WP_List_Table {
 			if ( version_compare( $latest->version, $current_version, '>' ) ) {
 				$update_url  = ( is_multisite() ? network_admin_url( 'update-core.php?force-check=1' ) : admin_url( 'update-core.php?force-check=1' ) );
 				$status      = 'old';
-				$new_version = _x( 'Newest version:', 'vd-helper', 'vendidero-helper' ) . ' <span class="version version-latest">' . $latest->version . '</span>';
+				$new_version = _x( 'vs.', 'vd-helper', 'vendidero-helper' ) . ' <span class="version version-latest">' . $latest->version . '</span>';
 
 				if ( ! $item->has_expired() ) {
 					$new_version .= '<br/><a class="button button-secondary" href="' . esc_url( $update_url ) . '">' . esc_html_x( 'Check for updates', 'vd-helper', 'vendidero-helper' ) . '</a>';
