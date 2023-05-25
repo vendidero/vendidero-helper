@@ -519,6 +519,8 @@ class Package {
 	}
 
 	public static function load_plugin_textdomain() {
+		add_filter( 'plugin_locale', array( __CLASS__, 'support_german_language_variants' ), 10, 2 );
+
 		$domain = 'vendidero-helper';
 
 		if ( function_exists( 'determine_locale' ) ) {
@@ -533,9 +535,17 @@ class Package {
 		load_plugin_textdomain( $domain, false, plugin_basename( self::get_path() ) . '/i18n/' );
 	}
 
+	public static function support_german_language_variants( $locale, $domain ) {
+		if ( 'vendidero-helper' === $domain && in_array( $locale, array( 'de_CH', 'de_AT' ), true ) ) {
+			$locale = 'de_DE';
+		}
+
+		return $locale;
+	}
+
 	public static function maybe_update() {
 		if ( ! defined( 'IFRAME_REQUEST' ) && Install::get_current_version() !== self::get_version() ) {
-			self::install();
+			Install::install();
 		}
 	}
 
