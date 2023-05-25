@@ -34,7 +34,7 @@ class LicenseTable extends \WP_List_Table {
 	}
 
 	public function no_items() {
-		echo wpautop( esc_html__( 'No vendidero products found.', 'vendidero-helper' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		echo wpautop( esc_html_x( 'No vendidero products found.', 'vd-helper', 'vendidero-helper' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	public function column_default( $item, $column_name ) {
@@ -53,10 +53,10 @@ class LicenseTable extends \WP_List_Table {
 
 	public function get_columns() {
 		$columns = array(
-			'product_name'    => __( 'Product', 'vendidero-helper' ),
-			'product_version' => __( 'Version', 'vendidero-helper' ),
-			'product_expires' => __( 'Update & Support', 'vendidero-helper' ),
-			'product_status'  => __( 'License Key', 'vendidero-helper' ),
+			'product_name'    => _x( 'Product', 'vd-helper', 'vendidero-helper' ),
+			'product_version' => _x( 'Version', 'vd-helper', 'vendidero-helper' ),
+			'product_expires' => _x( 'Update & Support', 'vd-helper', 'vendidero-helper' ),
+			'product_status'  => _x( 'License Key', 'vd-helper', 'vendidero-helper' ),
 		);
 
 		return $columns;
@@ -90,13 +90,13 @@ class LicenseTable extends \WP_List_Table {
 		if ( $item->get_expiration_date() ) {
 
 			if ( $item->has_expired() && $item->supports_renewals() ) {
-				$return = '<a href="' . esc_url( $item->get_renewal_url() ) . '" class="button button-primary wc-gzd-button" target="_blank">' . __( 'renew now', 'vendidero-helper' ) . '</a>';
+				$return = '<a href="' . esc_url( $item->get_renewal_url() ) . '" class="button button-primary wc-gzd-button" target="_blank">' . _x( 'renew now', 'vd-helper', 'vendidero-helper' ) . '</a>';
 			} else {
 				$return = $item->get_expiration_date();
 			}
 
 			if ( $item->supports_renewals() ) {
-				$return .= '<a class="refresh-expiration" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $item->id ) ), 'vd-refresh-license-status' ) ) . '">' . __( 'Refresh', 'vendidero-helper' ) . '</a>';
+				$return .= '<a class="refresh-expiration" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $item->id ) ), 'vd-refresh-license-status' ) ) . '">' . _x( 'Refresh', 'vd-helper', 'vendidero-helper' ) . '</a>';
 			}
 
 			return $return;
@@ -120,10 +120,10 @@ class LicenseTable extends \WP_List_Table {
 			if ( version_compare( $latest->version, $current_version, '>' ) ) {
 				$update_url  = ( is_multisite() ? network_admin_url( 'update-core.php?force-check=1' ) : admin_url( 'update-core.php?force-check=1' ) );
 				$status      = 'old';
-				$new_version = __( 'Newest version:', 'vendidero-helper' ) . ' <span class="version version-latest">' . $latest->version . '</span>';
+				$new_version = _x( 'Newest version:', 'vd-helper', 'vendidero-helper' ) . ' <span class="version version-latest">' . $latest->version . '</span>';
 
 				if ( ! $item->has_expired() ) {
-					$new_version .= '<br/><a class="button button-secondary" href="' . esc_url( $update_url ) . '">' . esc_html__( 'Check for updates', 'vendidero-helper' ) . '</a>';
+					$new_version .= '<br/><a class="button button-secondary" href="' . esc_url( $update_url ) . '">' . esc_html_x( 'Check for updates', 'vd-helper', 'vendidero-helper' ) . '</a>';
 				}
 			}
 		}
@@ -147,10 +147,10 @@ class LicenseTable extends \WP_List_Table {
 			$base_url = admin_url( 'index.php' );
 
 			$unregister_url = wp_nonce_url( add_query_arg( 'action', 'vd_unregister', add_query_arg( 'filepath', $item->file, add_query_arg( 'page', 'vendidero', $base_url ) ) ), 'bulk_licenses' );
-			$response       = '<a href="' . esc_url( $unregister_url ) . '">' . __( 'Unregister', 'vendidero-helper' ) . '</a>' . "\n";
+			$response       = '<a href="' . esc_url( $unregister_url ) . '">' . _x( 'Unregister', 'vd-helper', 'vendidero-helper' ) . '</a>' . "\n";
 		} else {
-			$response .= '<input name="license_keys[' . esc_attr( $item->file ) . ']" id="license_keys-' . esc_attr( $item->file ) . '" type="text" value="" style="width: 100%" aria-required="true" placeholder="' . esc_attr( __( 'Enter license key', 'vendidero-helper' ) ) . '" /><br/>';
-			$response .= '<a href="https://vendidero.de/dashboard/products/" target="_blank">' . __( 'Find your license key', 'vendidero-helper' ) . '</a>';
+			$response .= '<input name="license_keys[' . esc_attr( $item->file ) . ']" id="license_keys-' . esc_attr( $item->file ) . '" type="text" value="" style="width: 100%" aria-required="true" placeholder="' . esc_attr( _x( 'Enter license key', 'vd-helper', 'vendidero-helper' ) ) . '" /><br/>';
+			$response .= '<a href="https://vendidero.de/dashboard/products/" target="_blank">' . _x( 'Find your license key', 'vd-helper', 'vendidero-helper' ) . '</a>';
 		}
 
 		return $response;

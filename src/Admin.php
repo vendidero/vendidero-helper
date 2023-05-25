@@ -163,7 +163,7 @@ class Admin {
 						$product->refresh_expiration_date();
 
 						if ( $product->supports_renewals() && $product->has_expired() ) {
-							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->file ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html__( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( Package::get_helper_url( $product->get_expired_blog_id() ) ) . '">' . esc_html__( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
+							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->file ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html_x( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vd-helper', 'vendidero-helper' ), '<a href="' . esc_url( Package::get_helper_url( $product->get_expired_blog_id() ) ) . '">' . esc_html_x( 'check', 'vd-helper', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -176,7 +176,7 @@ class Admin {
 						$product->refresh_expiration_date();
 
 						if ( $product->supports_renewals() && $product->has_expired() ) {
-							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->file ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html__( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vendidero-helper' ), '<a href="' . esc_url( Package::get_helper_url( $product->get_expired_blog_id() ) ) . '">' . esc_html__( 'check', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
+							echo '<div class="vd-upgrade-notice" data-for="' . esc_attr( md5( $product->file ) ) . '" style="display: none"><span class="vd-inline-upgrade-expire-notice">' . sprintf( esc_html_x( 'Seems like your update- and support flat has expired. Please %s your license before updating.', 'vd-helper', 'vendidero-helper' ), '<a href="' . esc_url( Package::get_helper_url( $product->get_expired_blog_id() ) ) . '">' . esc_html_x( 'check', 'vd-helper', 'vendidero-helper' ) . '</a>' ) . '</span></div>';
 						}
 					}
 				}
@@ -235,13 +235,13 @@ class Admin {
 					if ( ! $product->is_registered( $blog_id ) ) {
 						?>
 						<div class="error">
-							<p><?php printf( esc_html__( 'Your %1$s license for %2$s doesn\'t seem to be registered. Please %3$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $blog_info->blogname ), '<a style="margin-left: 5px;" class="button button-secondary" href="' . esc_url( $admin_url ) . '">' . esc_html__( 'manage your licenses', 'vendidero-helper' ) . '</a>' ); ?></p>
+							<p><?php printf( esc_html_x( 'Your %1$s license for %2$s doesn\'t seem to be registered. Please %3$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $blog_info->blogname ), '<a style="margin-left: 5px;" class="button button-secondary" href="' . esc_url( $admin_url ) . '">' . esc_html_x( 'manage your licenses', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?></p>
 						</div>
 						<?php
 					} elseif ( $product->supports_renewals() && $product->has_expired( $blog_id ) ) {
 						?>
 						<div class="error">
-							<p><?php printf( esc_html__( 'Your %1$s license for %2$s has expired on %3$s. %4$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $blog_info->blogname ), esc_html( $product->get_expiration_date( get_option( 'date_format' ), $blog_id ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url( $blog_id ) ) . '">' . esc_html__( 'renew now', 'vendidero-helper' ) . '</a>' ); ?></p>
+							<p><?php printf( esc_html_x( 'Your %1$s license for %2$s has expired on %3$s. %4$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $blog_info->blogname ), esc_html( $product->get_expiration_date( get_option( 'date_format' ), $blog_id ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url( $blog_id ) ) . '">' . esc_html_x( 'renew now', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?></p>
 						</div>
 						<?php
 					}
@@ -250,11 +250,11 @@ class Admin {
 				if ( ! $product->is_registered() ) {
 					?>
 					<div class="error">
-						<p><?php printf( esc_html__( 'Your %1$s license doesn\'t seem to be registered. Please %2$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', '<a style="margin-left: 5px;" class="button button-secondary" href="' . esc_url( $admin_url ) . '">' . esc_html__( 'manage your licenses', 'vendidero-helper' ) . '</a>' ); ?></p>
+						<p><?php printf( esc_html_x( 'Your %1$s license doesn\'t seem to be registered. Please %2$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', '<a style="margin-left: 5px;" class="button button-secondary" href="' . esc_url( $admin_url ) . '">' . esc_html_x( 'manage your licenses', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?></p>
 					</div>
 				<?php } elseif ( $product->has_expired() && $product->supports_renewals() ) { ?>
 					<div class="error">
-						<p><?php printf( esc_html__( 'Your %1$s license has expired on %2$s. %3$s %4$s', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $product->get_expiration_date( get_option( 'date_format' ) ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url() ) . '">' . esc_html__( 'renew now', 'vendidero-helper' ) . '</a>', '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $product->id ) ), 'vd-refresh-license-status' ) ) . '" class="" style="margin-left: 1em;">' . esc_html__( 'Already renewed?', 'vendidero-helper' ) . '</a>' ); ?></p>
+						<p><?php printf( esc_html_x( 'Your %1$s license has expired on %2$s. %3$s %4$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $product->get_expiration_date( get_option( 'date_format' ) ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url() ) . '">' . esc_html_x( 'renew now', 'vd-helper', 'vendidero-helper' ) . '</a>', '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $product->id ) ), 'vd-refresh-license-status' ) ) . '" class="" style="margin-left: 1em;">' . esc_html_x( 'Already renewed?', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?></p>
 					</div>
 					<?php
 				}
@@ -267,9 +267,9 @@ class Admin {
 		<div class="vd-wrapper">
 			<div class="wrap about-wrap vendidero-wrap">
 				<div class="col-wrap">
-					<h1><?php esc_html_e( 'Welcome to vendidero', 'vendidero-helper' ); ?></h1>
+					<h1><?php echo esc_html_x( 'Welcome to vendidero', 'vd-helper', 'vendidero-helper' ); ?></h1>
 					<div class="about-text vendidero-updater-about-text">
-						<?php esc_html_e( 'Easily manage your licenses for vendidero Products and enjoy automatic updates & more.', 'vendidero-helper' ); ?>
+						<?php echo esc_html_x( 'Easily manage your licenses for vendidero Products and enjoy automatic updates & more.', 'vd-helper', 'vendidero-helper' ); ?>
 					</div>
 				</div>
 			</div>
@@ -345,7 +345,7 @@ class Admin {
 
 		if ( isset( $products[ $file ] ) ) {
 			if ( ! Package::get_api()->unregister( $products[ $file ] ) ) {
-				array_push( $errors, sprintf( __( 'Sorry, there was an error while unregistering %s', 'vendidero-helper' ), $products[ $file ]->Name ) );
+				array_push( $errors, sprintf( _x( 'Sorry, there was an error while unregistering %s', 'vd-helper', 'vendidero-helper' ), $products[ $file ]->Name ) );
 			}
 		}
 

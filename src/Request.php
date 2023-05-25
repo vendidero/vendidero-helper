@@ -104,7 +104,7 @@ class Request {
 						}
 					}
 				} else {
-					$wp_error = new \WP_Error( 500, __( 'Error while requesting vendidero helper data.', 'vendidero-helper' ) );
+					$wp_error = new \WP_Error( 500, _x( 'Error while requesting vendidero helper data.', 'vd-helper', 'vendidero-helper' ) );
 				}
 
 				return $wp_error;

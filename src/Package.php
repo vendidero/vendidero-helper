@@ -182,14 +182,14 @@ class Package {
 				'vendidero_expired',
 				sprintf(
 				// translators: %s: Renewal url.
-					__( 'Your update- and support-flat has expired. Please <a href="%s" target="_blank">renew</a> your license before updating.', 'vendidero-helper' ),
+					_x( 'Your update- and support-flat has expired. Please <a href="%s" target="_blank">renew</a> your license before updating.', 'vd-helper', 'vendidero-helper' ),
 					esc_url( $product->get_renewal_url() )
 				)
 			);
 		} else {
 			return new \WP_Error(
 				'vendidero_expired',
-				__( 'Your update- and support-flat has expired. Please renew your license before updating.', 'vendidero-helper' )
+				_x( 'Your update- and support-flat has expired. Please renew your license before updating.', 'vd-helper', 'vendidero-helper' )
 			);
 		}
 	}

@@ -24,7 +24,7 @@
 			}
 
 			if ( $has_unregisted ) {
-				submit_button( __( 'Register Products', 'vendidero-helper' ), 'button-primary' );
+				submit_button( _x( 'Register Products', 'vd-helper', 'vendidero-helper' ), 'button-primary' );
 			}
 			?>
 
