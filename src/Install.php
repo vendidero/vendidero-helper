@@ -26,6 +26,13 @@ class Install {
 	public static function update() {
 		$current_version = self::get_current_version();
 
+		/**
+		 * Was stored as blog option in older versions.
+		 */
+		if ( is_null( $current_version ) && is_multisite() ) {
+			$current_version = get_option( 'vendidero_version', null );
+		}
+
 		if ( ! empty( $current_version ) && version_compare( $current_version, '2.2.0', '<' ) ) {
 			/**
 			 * Copy network-wide license data to each (active) site.
