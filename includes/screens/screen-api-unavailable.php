@@ -1,9 +1,4 @@
-<?php
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-?>
+<?php defined( 'ABSPATH' ) || exit; ?>
 <div class="about-wrap">
 	<div class="col-wrap">
 		<h3><?php esc_html_e( 'Oops, seems like the API needs a break', 'vendidero-helper' ); ?></h3>

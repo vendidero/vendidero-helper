@@ -1,14 +1,14 @@
 <?php
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
-}
+namespace Vendidero\VendideroHelper;
+
+defined( 'ABSPATH' ) || exit;
 
 if ( ! class_exists( 'WP_List_Table' ) ) {
 	require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 }
 
-class VD_Admin_License_Table extends WP_List_Table {
+class LicenseTable extends \WP_List_Table {
 
 	public $per_page   = 30;
 	public $data       = array();
@@ -63,7 +63,7 @@ class VD_Admin_License_Table extends WP_List_Table {
 	}
 
 	/**
-	 * @param VD_Product $item
+	 * @param Product $item
 	 *
 	 * @return string
 	 */
@@ -82,7 +82,7 @@ class VD_Admin_License_Table extends WP_List_Table {
 	}
 
 	/**
-	 * @param VD_Product $item
+	 * @param Product $item
 	 *
 	 * @return string
 	 */
@@ -106,12 +106,12 @@ class VD_Admin_License_Table extends WP_List_Table {
 	}
 
 	/**
-	 * @param VD_Product $item
+	 * @param Product $item
 	 *
 	 * @return string
 	 */
 	public function column_product_version( $item ) {
-		$latest          = VD()->api->info( $item );
+		$latest          = Package::get_api()->info( $item );
 		$current_version = $item->Version;
 		$status          = 'latest';
 		$new_version     = '';
@@ -136,7 +136,7 @@ class VD_Admin_License_Table extends WP_List_Table {
 	}
 
 	/**
-	 * @param VD_Product $item
+	 * @param Product $item
 	 *
 	 * @return string
 	 */
@@ -144,7 +144,7 @@ class VD_Admin_License_Table extends WP_List_Table {
 		$response = '';
 
 		if ( $item->is_registered() ) {
-			$base_url = ( is_multisite() ) ? network_admin_url( 'index.php' ) : admin_url( 'index.php' );
+			$base_url = admin_url( 'index.php' );
 
 			$unregister_url = wp_nonce_url( add_query_arg( 'action', 'vd_unregister', add_query_arg( 'filepath', $item->file, add_query_arg( 'page', 'vendidero', $base_url ) ) ), 'bulk_licenses' );
 			$response       = '<a href="' . esc_url( $unregister_url ) . '">' . __( 'Unregister', 'vendidero-helper' ) . '</a>' . "\n";
@@ -180,5 +180,4 @@ class VD_Admin_License_Table extends WP_List_Table {
 
 		$this->items = $this->found_data;
 	}
-
 }

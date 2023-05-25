@@ -1,14 +1,18 @@
 <?php
 
-class VD_Request {
+namespace Vendidero\VendideroHelper;
 
-	public $product   = null;
+defined( 'ABSPATH' ) || exit;
+
+class Request {
+
+	private $product  = null;
 	private $response = null;
 	private $raw      = null;
 	private $args     = array();
 	private $code     = 500;
 
-	public function __construct( $type = 'ping', VD_Product $product = null, $args = array() ) {
+	public function __construct( $type = 'ping', Product $product = null, $args = array() ) {
 		$default_args = array(
 			'method'  => 'GET',
 			'request' => $type,
@@ -25,27 +29,26 @@ class VD_Request {
 		}
 
 		$this->args     = wp_parse_args( $args, $default_args );
-		$this->response = new stdClass();
+		$this->response = new \stdClass();
 
 		$this->init();
 	}
 
-	public function init() {
+	protected function init() {
 		$this->do_request();
 	}
 
 	private function get_endpoint() {
-		$api_url = VD()->get_api_url();
+		$api_url = Package::get_api_url();
 
-		if ( strpos( $this->args['request'], 'releases/' ) !== false ) {
-			$api_url = VD()->get_download_api_url();
+		if ( strstr( $this->args['request'], 'releases/' ) ) {
+			$api_url = Package::get_download_api_url();
 		}
 
 		return trailingslashit( $api_url ) . $this->args['request'];
 	}
 
-	public function do_request() {
-
+	protected function do_request() {
 		if ( 'GET' === $this->args['method'] ) {
 			$url = add_query_arg( $this->args, $this->get_endpoint() );
 
@@ -54,7 +57,7 @@ class VD_Request {
 				array(
 					'redirection' => 5,
 					'blocking'    => true,
-					'headers'     => array( 'user-agent' => 'Vendidero/' . VD()->version ),
+					'headers'     => array( 'user-agent' => 'Vendidero/' . Package::get_version() ),
 					'cookies'     => array(),
 					'sslverify'   => false,
 				)
@@ -66,7 +69,7 @@ class VD_Request {
 					'method'      => 'POST',
 					'redirection' => 5,
 					'blocking'    => true,
-					'headers'     => array( 'user-agent' => 'Vendidero/' . VD()->version ),
+					'headers'     => array( 'user-agent' => 'Vendidero/' . Package::get_version() ),
 					'body'        => $this->args,
 					'cookies'     => array(),
 					'sslverify'   => false,
@@ -93,7 +96,7 @@ class VD_Request {
 			if ( $this->is_error() ) {
 
 				if ( isset( $this->response->code ) ) {
-					$wp_error = new WP_Error( $this->response->code, $this->response->message, $this->response->data );
+					$wp_error = new \WP_Error( $this->response->code, $this->response->message, $this->response->data );
 
 					if ( isset( $this->response->additional_errors ) ) {
 						foreach ( $this->response->additional_errors as $error ) {
@@ -101,7 +104,7 @@ class VD_Request {
 						}
 					}
 				} else {
-					$wp_error = new WP_Error( 500, __( 'Error while requesting vendidero helper data.', 'vendidero-helper' ) );
+					$wp_error = new \WP_Error( 500, __( 'Error while requesting vendidero helper data.', 'vendidero-helper' ) );
 				}
 
 				return $wp_error;

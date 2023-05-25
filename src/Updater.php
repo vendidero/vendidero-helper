@@ -1,13 +1,15 @@
 <?php
 
-class VD_Updater {
+namespace Vendidero\VendideroHelper;
 
-	public $product;
-	public $notices              = array();
-	public $upgrade_notices      = array();
-	public $added_upgrade_notice = false;
+defined( 'ABSPATH' ) || exit;
 
-	public function __construct( VD_Product $product ) {
+class Updater {
+
+	protected $product;
+	protected $notices = array();
+
+	public function __construct( $product ) {
 		$this->product = $product;
 
 		// Check For Updates
@@ -19,7 +21,7 @@ class VD_Updater {
 			return $transient;
 		}
 
-		$data = VD()->api->update_check( $this->product, $this->product->get_key() );
+		$data = Package::get_api()->update_check( $this->product, $this->product->get_key() );
 
 		if ( ! empty( $data['errors'] ) ) {
 			$this->add_notice( $data['errors'] );

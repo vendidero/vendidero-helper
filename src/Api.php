@@ -1,17 +1,36 @@
 <?php
 
-class VD_API {
+namespace Vendidero\VendideroHelper;
 
-	public function __construct() {}
+defined( 'ABSPATH' ) || exit;
+
+class Api {
+
+	/** @var Api */
+	private static $instance;
+
+	/**
+	 * @return Api
+	 */
+	public static function instance() {
+		if ( ! isset( self::$instance ) ) {
+			self::$instance = new static();
+		}
+
+		return self::$instance;
+	}
+
+	/** Disabled Api constructor. Use Api::instance() as singleton */
+	protected function __construct() {}
 
 	public function ping() {
-		$request = new VD_Request( 'ping' );
+		$request = new Request( 'ping' );
 
 		return ( ! $request->is_error() && $request->get_response() ? true : false );
 	}
 
-	public function register( VD_Product $product, $key ) {
-		$request = new VD_Request( 'license/' . md5( $key ), $product );
+	public function register( Product $product, $key ) {
+		$request = new Request( 'license/' . md5( $key ), $product );
 
 		if ( ! $request->is_error() ) {
 			$product->register( $key, ( $request->get_response( 'expiration_date' ) ? $request->get_response( 'expiration_date' ) : '' ) );
@@ -20,26 +39,26 @@ class VD_API {
 		return $request->get_response();
 	}
 
-	public function unregister( VD_Product $product ) {
+	public function unregister( Product $product ) {
 		$product->unregister();
 
 		return true;
 	}
 
-	public function info( VD_Product $product ) {
+	public function info( Product $product ) {
 		$data = $this->info_check_callback( $product );
 
 		return ( false !== $data ? $data : false );
 	}
 
-	private function expiry_check_callback( VD_Product $product ) {
+	private function expiry_check_callback( Product $product ) {
 		$cache_key = "_vendidero_helper_expiry_{$product->id}";
 		$data      = get_transient( $cache_key );
 
 		if ( false !== $data ) {
 			if ( empty( $data['expiration_date'] ) ) {
 				$errors = $data['errors'];
-				$error  = new WP_Error();
+				$error  = new \WP_Error();
 
 				if ( ! empty( $errors ) ) {
 					foreach ( $errors as $i => $e ) {
@@ -59,7 +78,7 @@ class VD_API {
 			'errors'          => array(),
 		);
 
-		$request = new VD_Request( 'license/' . $product->get_key(), $product );
+		$request = new Request( 'license/' . $product->get_key(), $product );
 		$error   = false;
 
 		if ( $request->is_error() ) {
@@ -77,7 +96,7 @@ class VD_API {
 		return is_wp_error( $error ) ? $error : $data['expiration_date'];
 	}
 
-	public function expiration_check( VD_Product $product, $force = false ) {
+	public function expiration_check( Product $product, $force = false ) {
 		if ( $force ) {
 			delete_transient( "_vendidero_helper_expiry_{$product->id}" );
 		}
@@ -86,12 +105,12 @@ class VD_API {
 	}
 
 	public function flush_cache() {
-		foreach ( VD()->get_products() as $product ) {
+		foreach ( Package::get_products() as $product ) {
 			$product->flush_api_cache();
 		}
 	}
 
-	private function info_check_callback( VD_Product $product ) {
+	private function info_check_callback( Product $product ) {
 		$cache_key        = "_vendidero_helper_update_info_{$product->id}";
 		$data             = get_transient( $cache_key );
 		$update_transient = get_transient( "_vendidero_helper_updates_{$product->id}" );
@@ -117,7 +136,7 @@ class VD_API {
 			'errors'  => array(),
 		);
 
-		$request = new VD_Request( "releases/{$product->id}/latest/info", $product );
+		$request = new Request( "releases/{$product->id}/latest/info", $product );
 
 		if ( $request->is_error() ) {
 			$error = $request->get_response();
@@ -134,7 +153,7 @@ class VD_API {
 		return ! empty( $data['errors'] ) ? false : $data['payload'];
 	}
 
-	private function update_check_callback( VD_Product $product, $key = '' ) {
+	private function update_check_callback( Product $product, $key = '' ) {
 		$cache_key = "_vendidero_helper_updates_{$product->id}";
 		$data      = get_transient( $cache_key );
 
@@ -161,7 +180,7 @@ class VD_API {
 			'info'    => array(),
 		);
 
-		$request = new VD_Request(
+		$request = new Request(
 			"releases/{$product->id}/latest",
 			$product,
 			array(
@@ -193,20 +212,20 @@ class VD_API {
 		return $data;
 	}
 
-	public function update_check( VD_Product $product, $key = '' ) {
+	public function update_check( Product $product, $key = '' ) {
 		return $this->update_check_callback( $product, $key );
 	}
 
-	public function generator_version_check( VD_Product $product, $generator ) {
+	public function generator_version_check( Product $product, $generator ) {
 		$slug    = sanitize_title( $generator );
-		$request = new VD_Request( "generator/{$slug}/info", $product );
+		$request = new Request( "generator/{$slug}/info", $product );
 
 		return ( ! $request->is_error() ? $request->get_response( 'all' ) : false );
 	}
 
-	public function generator_check( VD_Product $product, $generator, $settings = array() ) {
+	public function generator_check( Product $product, $generator, $settings = array() ) {
 		$slug    = sanitize_title( $generator );
-		$request = new VD_Request(
+		$request = new Request(
 			"generator/{$slug}/question",
 			$product,
 			array(
@@ -219,9 +238,9 @@ class VD_API {
 		return ( ! $request->is_error() ? $request->get_response() : $request->get_response() );
 	}
 
-	public function generator_result_check( VD_Product $product, $generator, $data = array(), $settings = array() ) {
+	public function generator_result_check( Product $product, $generator, $data = array(), $settings = array() ) {
 		$slug    = sanitize_title( $generator );
-		$request = new VD_Request(
+		$request = new Request(
 			"generator/{$slug}/result",
 			$product,
 			array(

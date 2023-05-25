@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vendidero Helper v1.0.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-23 11:59+0200\n"
-"PO-Revision-Date: 2022-06-23 11:59+0200\n"
+"POT-Creation-Date: 2023-03-31 13:32+0200\n"
+"PO-Revision-Date: 2023-03-31 13:32+0200\n"
 "Last-Translator: Dennis Nissle <info@vendidero.de>\n"
 "Language-Team: \n"
 "Language: de_DE@formal\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 3.1\n"
+"X-Generator: Poedit 3.2.2\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-Flags-xgettext: --add-comments=translators:\n"
 "X-Poedit-WPHeader: vendidero-helper.php\n"
@@ -26,125 +26,12 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-3: build\n"
 
 # @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:37
-msgid "No vendidero products found."
-msgstr "Keine vendidero Produkte gefunden."
-
-# @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:56
-msgid "Product"
-msgstr "Produkt"
-
-# @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:57
-msgid "Version"
-msgstr "Version"
-
-# @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:58
-msgid "Update & Support"
-msgstr "Updates & Support"
-
-# @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:59
-msgid "License Key"
-msgstr "Lizenzschlüssel"
-
-# @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:93 includes/class-vd-admin.php:179
-#: screens/screen-notice-expire.php:42
-msgid "renew now"
-msgstr "jetzt verlängern"
-
-#: includes/class-vd-admin-license-table.php:99
-msgid "Refresh"
-msgstr "Aktualisieren"
-
-#: includes/class-vd-admin-license-table.php:123
-msgid "Newest version:"
-msgstr "Aktuelle Version:"
-
-#: includes/class-vd-admin-license-table.php:126
-msgid "Check for updates"
-msgstr "Nach Updates suchen"
-
-# @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:150
-msgid "Unregister"
-msgstr "Deaktivieren"
-
-# @ vendidero-helper
-#: includes/class-vd-admin-license-table.php:152
-msgid "Enter license key"
-msgstr "Lizenzschlüssel eingeben"
-
-#: includes/class-vd-admin-license-table.php:153
-msgid "Find your license key"
-msgstr "Finde deinen Lizenzschlüssel"
-
-#: includes/class-vd-admin.php:99 includes/class-vd-admin.php:113
-#, php-format
-msgid ""
-"Seems like your update- and support flat has expired. Please %s your license "
-"before updating."
-msgstr ""
-"Es scheint als wäre deine Update- und Support-Flatrate abgelaufen. Bitte %s "
-"deine Lizenz vor dem Update."
-
-#: includes/class-vd-admin.php:99 includes/class-vd-admin.php:113
-msgid "check"
-msgstr "prüfe"
-
-#: includes/class-vd-admin.php:175
-#, php-format
-msgid "Your %1$s license doesn't seem to be registered. Please %2$s"
-msgstr "Deine %1$s Lizenz scheint nicht registriert zu sein. Bitte %2$s"
-
-#: includes/class-vd-admin.php:175
-msgid "manage your licenses"
-msgstr "verwalte deine Lizenzen"
-
-#: includes/class-vd-admin.php:179
-#, php-format
-msgid "Your %1$s license has expired on %2$s. %3$s %4$s"
-msgstr ""
-"Deine Update- und Support-Flatrate für %1$s ist am %2$s abgelaufen. %3$s %4$s"
-
-#: includes/class-vd-admin.php:179
-msgid "Already renewed?"
-msgstr "Bereits verlängert?"
-
-# @ vendidero-helper
-#: includes/class-vd-admin.php:191
-msgid "Welcome to vendidero"
-msgstr "Willkommen bei vendidero"
-
-# @ vendidero-helper
-#: includes/class-vd-admin.php:193
-msgid ""
-"Easily manage your licenses for vendidero Products and enjoy automatic "
-"updates & more."
-msgstr ""
-"Verwalte deine vendidero Lizenzen und profitiere von automatischen Updates & "
-"mehr."
-
-# @ vendidero-helper
-#: includes/class-vd-admin.php:271
-#, php-format
-msgid "Sorry, there was an error while unregistering %s"
-msgstr "Sorry, leider gab es beim deaktivieren der Lizenz von %s ein Problem"
-
-#: includes/class-vd-request.php:104
-msgid "Error while requesting vendidero helper data."
-msgstr "Fehler beim Abruf der API von vendidero."
-
-# @ vendidero-helper
-#: screens/screen-api-unavailable.php:9
+#: includes/screens/screen-api-unavailable.php:4
 msgid "Oops, seems like the API needs a break"
 msgstr "Hoppala, es scheint als sei die API gerade unerreichbar"
 
 # @ vendidero-helper
-#: screens/screen-api-unavailable.php:10
+#: includes/screens/screen-api-unavailable.php:5
 msgid ""
 "Sorry but currently we are not able to establish a connection to vendidero."
 "de - please be patient and try again in a few minutes."
@@ -153,17 +40,17 @@ msgstr ""
 "- bitte habe etwas Geduld und versuche es in ein paar Minuten erneut."
 
 # @ vendidero-helper
-#: screens/screen-manage-licenses.php:26
+#: includes/screens/screen-manage-licenses.php:23
 msgid "Register Products"
 msgstr "Produkte registrieren"
 
 # @ vendidero-helper
-#: screens/screen-notice-expire.php:29
+#: includes/screens/screen-notice-expire.php:27
 msgid "Update- and Support flat expires"
 msgstr "Update & Support Flatrate läuft aus"
 
 # @ vendidero-helper
-#: screens/screen-notice-expire.php:30
+#: includes/screens/screen-notice-expire.php:28
 msgid ""
 "It seems like the Update- and Support flat of one of your vendidero products "
 "expires in a few days or has already expired:"
@@ -171,46 +58,157 @@ msgstr ""
 "Es scheint als würde die Update & Support Flatrate für eines deiner "
 "vendidero Produkte in Kürze ablaufen oder bereits abgelaufen sein:"
 
-#: screens/screen-notice-expire.php:37
+#: includes/screens/screen-notice-expire.php:35
 #, php-format
 msgid "%1$s expired on %2$s"
 msgstr "%1$s ist am %2$s abgelaufen"
 
-#: screens/screen-notice-expire.php:39
+#: includes/screens/screen-notice-expire.php:37
 #, php-format
 msgid "%1$s expires on %2$s"
 msgstr "%1$s läuft am %2$s ab"
 
-#: screens/screen-notice-expire.php:48
+# @ vendidero-helper
+#: includes/screens/screen-notice-expire.php:40 src/Admin.php:244
+#: src/LicenseTable.php:93
+msgid "renew now"
+msgstr "jetzt verlängern"
+
+#: includes/screens/screen-notice-expire.php:46
 msgid "Learn more"
 msgstr "Mehr erfahren"
 
 # @ vendidero-helper
-#: screens/screen-notice-expire.php:49
+#: includes/screens/screen-notice-expire.php:47
 msgid "See license details"
 msgstr "Lizenzdetails ansehen"
 
 # @ vendidero-helper
-#: screens/screen-notice-expire.php:50
+#: includes/screens/screen-notice-expire.php:48
 msgid "Hide this notice"
 msgstr "Nachricht ausblenden"
 
-# @ vendidero-helper
-#: vendidero-helper.php:136
-msgid "Once per week"
-msgstr "Einmal pro Woche"
+#: src/Admin.php:90
+msgid ""
+"vendidero Helper must be network activated when in multisite environment."
+msgstr ""
+"Der vendidero Helper muss netzwerkweit aktiviert sein wenn du eine Multisite-"
+"Installation verwendest."
 
-#. translators: %s: Renewal url.
-#: vendidero-helper.php:203
+#: src/Admin.php:164 src/Admin.php:178
 #, php-format
 msgid ""
-"Your update- and support-flat has expired. Please <a href=\"%s\" target="
-"\"_blank\">renew</a> your license before updating."
+"Seems like your update- and support flat has expired. Please %s your license "
+"before updating."
+msgstr ""
+"Es scheint als wäre deine Update- und Support-Flatrate abgelaufen. Bitte %s "
+"deine Lizenz vor dem Update."
+
+#: src/Admin.php:164 src/Admin.php:178
+msgid "check"
+msgstr "prüfe"
+
+#: src/Admin.php:240
+#, php-format
+msgid "Your %1$s license doesn't seem to be registered. Please %2$s"
+msgstr "Deine %1$s Lizenz scheint nicht registriert zu sein. Bitte %2$s"
+
+#: src/Admin.php:240
+msgid "manage your licenses"
+msgstr "verwalte deine Lizenzen"
+
+#: src/Admin.php:244
+#, php-format
+msgid "Your %1$s license has expired on %2$s. %3$s %4$s"
+msgstr ""
+"Deine Update- und Support-Flatrate für %1$s ist am %2$s abgelaufen. %3$s %4$s"
+
+#: src/Admin.php:244
+msgid "Already renewed?"
+msgstr "Bereits verlängert?"
+
+# @ vendidero-helper
+#: src/Admin.php:256
+msgid "Welcome to vendidero"
+msgstr "Willkommen bei vendidero"
+
+# @ vendidero-helper
+#: src/Admin.php:258
+msgid ""
+"Easily manage your licenses for vendidero Products and enjoy automatic "
+"updates & more."
+msgstr ""
+"Verwalte deine vendidero Lizenzen und profitiere von automatischen Updates & "
+"mehr."
+
+# @ vendidero-helper
+#: src/Admin.php:336
+#, php-format
+msgid "Sorry, there was an error while unregistering %s"
+msgstr "Sorry, leider gab es beim deaktivieren der Lizenz von %s ein Problem"
+
+# @ vendidero-helper
+#: src/LicenseTable.php:37
+msgid "No vendidero products found."
+msgstr "Keine vendidero Produkte gefunden."
+
+# @ vendidero-helper
+#: src/LicenseTable.php:56
+msgid "Product"
+msgstr "Produkt"
+
+# @ vendidero-helper
+#: src/LicenseTable.php:57
+msgid "Version"
+msgstr "Version"
+
+# @ vendidero-helper
+#: src/LicenseTable.php:58
+msgid "Update & Support"
+msgstr "Updates & Support"
+
+# @ vendidero-helper
+#: src/LicenseTable.php:59
+msgid "License Key"
+msgstr "Lizenzschlüssel"
+
+#: src/LicenseTable.php:99
+msgid "Refresh"
+msgstr "Aktualisieren"
+
+#: src/LicenseTable.php:123
+msgid "Newest version:"
+msgstr "Aktuelle Version:"
+
+#: src/LicenseTable.php:126
+msgid "Check for updates"
+msgstr "Nach Updates suchen"
+
+# @ vendidero-helper
+#: src/LicenseTable.php:150
+msgid "Unregister"
+msgstr "Deaktivieren"
+
+# @ vendidero-helper
+#: src/LicenseTable.php:152
+msgid "Enter license key"
+msgstr "Lizenzschlüssel eingeben"
+
+#: src/LicenseTable.php:153
+msgid "Find your license key"
+msgstr "Finde deinen Lizenzschlüssel"
+
+#. translators: %s: Renewal url.
+#: src/Package.php:180
+#, php-format
+msgid ""
+"Your update- and support-flat has expired. Please <a href=\"%s\" "
+"target=\"_blank\">renew</a> your license before updating."
 msgstr ""
 "Es scheint als wäre deine Update- und Support-Flatrate abgelaufen. Bitte <a "
 "href=\"%s\" target=\"_blank\">verlängere</a> deine Lizenz vor dem Update."
 
-#: vendidero-helper.php:210
+#: src/Package.php:187
 msgid ""
 "Your update- and support-flat has expired. Please renew your license before "
 "updating."
@@ -218,12 +216,20 @@ msgstr ""
 "Es scheint als wäre deine Update- und Support-Flatrate abgelaufen. Bitte "
 "verlängere deine Lizenz vor dem Update."
 
-#: vendidero-helper.php:276
+#: src/Request.php:107
+msgid "Error while requesting vendidero helper data."
+msgstr "Fehler beim Abruf der API von vendidero."
+
+#. translators: 1: composer command. 2: plugin directory
+#: vendidero-helper.php:42 vendidero-helper.php:60
+#, php-format
+msgctxt "vd-helper"
 msgid ""
-"vendidero Helper must be network activated when in multisite environment."
+"Your installation of the vendidero helper plugin is incomplete. Please run "
+"%1$s within the %2$s directory."
 msgstr ""
-"Der vendidero Helper muss netzwerkweit aktiviert sein wenn du eine Multisite-"
-"Installation verwendest."
+"Deine Installation des vendidero helper Plugins ist unvollständig. Bitte "
+"führe %1$s innerhalb des %2$s Verzeichnisses aus."
 
 #. Plugin Name of the plugin/theme
 msgid "vendidero Helper"
@@ -250,6 +256,10 @@ msgid "https://vendidero.de"
 msgstr "https://vendidero.de"
 
 # @ vendidero-helper
+#~ msgid "Once per week"
+#~ msgstr "Einmal pro Woche"
+
+# @ vendidero-helper
 #~ msgid "Place %s license key here"
 #~ msgstr "Lizenzschlüssel von %s einfügen"
 
@@ -260,8 +270,8 @@ msgstr "https://vendidero.de"
 #~ "secondary\">Manage your licenses</a>"
 #~ msgstr ""
 #~ "Deine %s Lizenz scheint nicht registriert oder deine Update Flatrate "
-#~ "ausgelaufen zu sein <a style=\"margin-left: 1em\" href=\"%s\" class="
-#~ "\"button button-secondary\">Lizenzen verwalten</a>"
+#~ "ausgelaufen zu sein <a style=\"margin-left: 1em\" href=\"%s\" "
+#~ "class=\"button button-secondary\">Lizenzen verwalten</a>"
 
 #~ msgid ""
 #~ "You are running a multisite installation. Please make sure to register "
