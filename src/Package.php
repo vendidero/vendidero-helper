@@ -560,7 +560,9 @@ class Package {
 	}
 
 	public static function install_integration() {
-		self::install();
+		self::init( true );
+
+		Install::install();
 	}
 
 	public static function is_integration() {

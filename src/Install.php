@@ -65,6 +65,20 @@ class Install {
 
 				if ( Package::is_integration() ) {
 					deactivate_plugins( 'vendidero-helper/vendidero-helper.php', true );
+					delete_option( 'vendidero_version' );
+
+					/**
+					 * Somehow the plugin might be still activated for certain sub-sites.
+					 * Explicitly deactivate the plugin for each site separately.
+					 */
+					if ( is_multisite() ) {
+						foreach ( get_sites() as $site ) {
+							switch_to_blog( $site->blog_id );
+							deactivate_plugins( 'vendidero-helper/vendidero-helper.php', true );
+							delete_option( 'vendidero_version' );
+							restore_current_blog();
+						}
+					}
 				}
 
 				delete_site_option( 'vendidero_version' );
