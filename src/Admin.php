@@ -22,6 +22,80 @@ class Admin {
 		add_action( 'admin_post_vd_refresh_license_status', array( __CLASS__, 'refresh_license_status' ) );
 
 		add_action( 'vd_admin_notices', array( __CLASS__, 'print_notice' ) );
+
+		if ( is_multisite() ) {
+			add_action( 'admin_notices', array( __CLASS__, 'multisite_standalone_check' ) );
+			add_action( 'admin_post_install_vd_helper', array( __CLASS__, 'multisite_helper_install' ) );
+		}
+	}
+
+	public static function multisite_helper_install() {
+		if ( ! isset( $_GET['_wpnonce'] ) || ! wp_verify_nonce( wp_unslash( $_GET['_wpnonce'] ), 'vd_install_helper' ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			return;
+		}
+
+		if ( ! is_super_admin() ) {
+			return;
+		}
+
+		require_once ABSPATH . '/wp-admin/includes/plugin.php';
+		include_once ABSPATH . '/wp-admin/includes/admin.php';
+		include_once ABSPATH . '/wp-admin/includes/plugin-install.php';
+		include_once ABSPATH . '/wp-admin/includes/plugin.php';
+		include_once ABSPATH . '/wp-admin/includes/class-wp-upgrader.php';
+		include_once ABSPATH . '/wp-admin/includes/class-plugin-upgrader.php';
+		include_once ABSPATH . '/wp-admin/includes/class-automatic-upgrader-skin.php';
+
+		$plugins = array_keys( get_plugins() );
+
+		if ( ! in_array( 'vendidero-helper/vendidero-helper.php', $plugins, true ) ) {
+			$download_url = 'https://github.com/vendidero/vendidero-helper/releases/download/1.0.0/vendidero-helper.zip';
+			$upgrader     = new \Plugin_Upgrader( new \Automatic_Upgrader_Skin() );
+			$result       = $upgrader->install( $download_url );
+		} else {
+			$result = true;
+		}
+
+		if ( true === $result ) {
+			wp_safe_redirect( esc_url_raw( self::get_activate_helper_url() ) );
+		} else {
+			wp_safe_redirect( esc_url_raw( network_admin_url( 'plugins.php' ) ) );
+		}
+
+		exit();
+	}
+
+	protected static function is_helper_network_activated() {
+		require_once ABSPATH . '/wp-admin/includes/plugin.php';
+
+		if ( ! is_plugin_active_for_network( 'vendidero-helper/vendidero-helper.php' ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	protected static function get_activate_helper_url() {
+		return network_admin_url( 'plugins.php?action=activate&plugin=' . rawurlencode( 'vendidero-helper/vendidero-helper.php' ) . '&plugin_status=all&paged=1&s&_wpnonce=' . rawurlencode( wp_create_nonce( 'activate-plugin_vendidero-helper/vendidero-helper.php' ) ) );
+	}
+
+	public static function multisite_standalone_check() {
+		if ( self::is_helper_network_activated() || ! is_super_admin() ) {
+			return;
+		}
+
+		$install_url  = wp_nonce_url( admin_url( 'admin-post.php?action=install_vd_helper' ), 'vd_install_helper' );
+		$activate_url = self::get_activate_helper_url();
+
+		$message = wp_kses_post( sprintf( _x( 'To ensure smooth updates you\'ll need to %1$sinstall the standalone vendidero helper plugin%2$s network-wide.', 'vd-helper', 'vendidero-helper' ), '<a href="' . esc_url( $install_url ) . '">', '</a>' ) );
+		$plugins = array_keys( get_plugins() );
+
+		// Helper is installed but not activated
+		if ( in_array( 'vendidero-helper/vendidero-helper.php', $plugins, true ) ) {
+			$message = wp_kses_post( sprintf( _x( 'The vendidero helper needs to be %1$sactivated network-wide%2$s to ensure smooth updates for your products.', 'vd-helper', 'vendidero-helper' ), '<a href="' . esc_url( $activate_url ) . '">', '</a>' ) );
+		}
+
+		echo '<div class="error fade"><p>' . $message . '</p></div>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	public static function check_notice_hide() {
