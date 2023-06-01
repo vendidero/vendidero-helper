@@ -14,7 +14,7 @@ class Package {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.2.0';
+	const VERSION = '2.2.1';
 
 	/**
 	 * @var null|Product[]
@@ -243,20 +243,11 @@ class Package {
 	}
 
 	public static function get_available_plugins() {
-		return array(
-			'woocommerce-germanized-pro/woocommerce-germanized-pro.php' => array(
-				'product_id' => 148,
-			),
-		);
+		return array();
 	}
 
 	public static function get_available_themes() {
-		return array(
-			'vendipro/style.css' => array(
-				'product_id'        => 48,
-				'supports_renewals' => false,
-			),
-		);
+		return array();
 	}
 
 	protected static function register_products() {
@@ -268,9 +259,6 @@ class Package {
 		}
 
 		if ( is_multisite() && is_network_admin() ) {
-			$available_plugins = self::get_available_plugins();
-			$available_themes  = self::get_available_themes();
-
 			foreach ( get_sites(
 				array(
 					'public'   => 1,
@@ -279,74 +267,30 @@ class Package {
 					'archived' => 0,
 				)
 			) as $site ) {
-				$plugins = array_merge( (array) get_blog_option( $site->blog_id, 'active_plugins', array() ), array_keys( (array) get_site_option( 'active_sitewide_plugins', array() ) ) );
-				$theme   = get_blog_option( $site->blog_id, 'stylesheet' );
+				switch_to_blog( $site->blog_id );
+				$product_data = apply_filters( 'vendidero_updateable_products', array() );
 
-				if ( ! empty( $plugins ) ) {
-					foreach ( $available_plugins as $file => $args ) {
-						$args = wp_parse_args(
-							$args,
-							array(
-								'product_id'        => 0,
-								'supports_renewals' => true,
-							)
-						);
+				foreach ( $product_data as $product ) {
+					$file       = $product->file;
+					$product_id = $product->product_id;
 
-						$product_id = $args['product_id'];
-
-						if ( in_array( $file, $plugins, true ) ) {
-							if ( array_key_exists( $file, $products ) ) {
-								if ( ! isset( $products[ $file ]->blog_ids ) ) {
-									$products[ $file ]->blog_ids = array();
-								}
-
-								$products[ $file ]->blog_ids[] = $site->blog_id;
-							} else {
-								$plugin                    = new \stdClass();
-								$plugin->file              = $file;
-								$plugin->product_id        = $product_id;
-								$plugin->supports_renewals = $args['supports_renewals'];
-								$plugin->blog_ids          = array( $site->blog_id );
-
-								$products[ $plugin->file ] = $plugin;
-							}
+					if ( array_key_exists( $file, $products ) ) {
+						if ( ! isset( $products[ $file ]->blog_ids ) ) {
+							$products[ $file ]->blog_ids = array();
 						}
+
+						$products[ $file ]->blog_ids[] = $site->blog_id;
+					} else {
+						$plugin                    = new \stdClass();
+						$plugin->file              = $file;
+						$plugin->product_id        = $product_id;
+						$plugin->supports_renewals = isset( $product->supports_renewals ) ? $product->supports_renewals : true;
+						$plugin->blog_ids          = array( $site->blog_id );
+
+						$products[ $plugin->file ] = $plugin;
 					}
 				}
-
-				if ( $theme ) {
-					$theme = strpos( $theme, 'style.css' ) === false ? $theme . '/style.css' : $theme;
-
-					foreach ( $available_themes as $file => $args ) {
-						$args = wp_parse_args(
-							$args,
-							array(
-								'product_id'        => 0,
-								'supports_renewals' => true,
-							)
-						);
-
-						$product_id = $args['product_id'];
-
-						if ( $theme === $file ) {
-							if ( array_key_exists( $file, $products ) ) {
-								if ( ! isset( $products[ $file ]->blog_ids ) ) {
-									$products[ $file ]->blog_ids = array();
-								}
-
-								$products[ $file ]->blog_ids[] = $site->blog_id;
-							} else {
-								$plugin                    = new \stdClass();
-								$plugin->file              = $file;
-								$plugin->product_id        = $product_id;
-								$plugin->supports_renewals = $args['supports_renewals'];
-								$plugin->blog_ids          = array( $site->blog_id );
-
-								$products[ $plugin->file ] = $plugin;
-							}
-						}
-					}
-				}
+				restore_current_blog();
 			}
 		}
 

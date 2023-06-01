@@ -34,6 +34,9 @@ class Install {
 		}
 
 		if ( ! empty( $current_version ) && version_compare( $current_version, '2.2.0', '<' ) ) {
+			remove_all_filters( 'pre_set_site_transient_update_plugins', 10 );
+			remove_all_filters( 'pre_set_site_transient_update_themes', 10 );
+
 			/**
 			 * Copy network-wide license data to each (active) site.
 			 */
