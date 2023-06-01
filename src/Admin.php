@@ -288,7 +288,7 @@ class Admin {
 	}
 
 	public static function get_notice_excluded_screens() {
-		return array( 'index_page_vendidero-network', 'dashboard_page_vendidero', 'update-core-network', 'update-core' );
+		return array( 'index_page_vendidero-network', 'dashboard_page_vendidero', 'toplevel_page_vendidero', 'update-core-network', 'update-core' );
 	}
 
 	public static function product_registered() {
@@ -472,6 +472,7 @@ class Admin {
 			'themes-network',
 			'themes',
 			'dashboard_page_vendidero',
+            'toplevel_page_vendidero'
 		);
 
 		if ( in_array( $screen_id, $screens, true ) ) {
