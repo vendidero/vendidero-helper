@@ -309,8 +309,13 @@ class Package {
 			}
 		}
 
-		// Self update
-		self::add_product( 'vendidero-helper/vendidero-helper.php', 2198, array( 'free' => true ) );
+		/**
+		 * In case this installation is not an integration, register
+		 * the helper as a product to make sure it may be updated too.
+		 */
+		if ( ! self::is_integration() ) {
+			self::add_product( 'vendidero-helper/vendidero-helper.php', 2198, array( 'free' => true ) );
+		}
 	}
 
 	public static function add_product( $file, $product_id, $args = array() ) {

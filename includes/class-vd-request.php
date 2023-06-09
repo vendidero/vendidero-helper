@@ -3,6 +3,13 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
+ * During updating, the package may not be loaded yet. Manually include the dependency
+ */
+if ( ! class_exists( '\Vendidero\VendideroHelper\Request' ) ) {
+	require __DIR__ . '/../src/Request.php';
+}
+
+/**
  * This file is for legacy purposes only as it may be used
  * by version <= 2.1.6 within the update request.
  */
