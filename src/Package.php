@@ -14,7 +14,7 @@ class Package {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.2.1';
+	const VERSION = '2.2.2';
 
 	/**
 	 * @var null|Product[]
@@ -268,26 +268,15 @@ class Package {
 				)
 			) as $site ) {
 				switch_to_blog( $site->blog_id );
-				$product_data = apply_filters( 'vendidero_updateable_products', array() );
+				ExtensionHelper::clear_cache();
 
-				foreach ( $product_data as $product ) {
-					$file       = $product->file;
-					$product_id = $product->product_id;
-
-					if ( array_key_exists( $file, $products ) ) {
+				foreach ( $products as $file => $product ) {
+					if ( ExtensionHelper::is_plugin_active( $file ) || ExtensionHelper::is_theme_active( $file ) ) {
 						if ( ! isset( $products[ $file ]->blog_ids ) ) {
 							$products[ $file ]->blog_ids = array();
 						}
 
 						$products[ $file ]->blog_ids[] = $site->blog_id;
-					} else {
-						$plugin                    = new \stdClass();
-						$plugin->file              = $file;
-						$plugin->product_id        = $product_id;
-						$plugin->supports_renewals = isset( $product->supports_renewals ) ? $product->supports_renewals : true;
-						$plugin->blog_ids          = array( $site->blog_id );
-
-						$products[ $plugin->file ] = $plugin;
 					}
 				}
 				restore_current_blog();

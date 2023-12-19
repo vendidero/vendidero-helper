@@ -259,6 +259,14 @@ class Admin {
 	}
 
 	public static function add_menu() {
+		/**
+		 * Hide from menu in case we are in a multisite and this particular site does not
+		 * use one of our extensions.
+		 */
+		if ( is_multisite() && empty( Package::get_products( false ) ) ) {
+			return;
+		}
+
 		$hook = add_dashboard_page( 'vendidero', 'vendidero', 'manage_options', 'vendidero', array( __CLASS__, 'screen' ) );
 
 		add_action( 'load-' . $hook, array( __CLASS__, 'process' ) );
