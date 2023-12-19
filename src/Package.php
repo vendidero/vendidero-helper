@@ -302,7 +302,7 @@ class Package {
 		 * In case this installation is not an integration, register
 		 * the helper as a product to make sure it may be updated too.
 		 */
-		if ( ! self::is_integration() ) {
+		if ( ! self::is_integration() || ExtensionHelper::is_plugin_active( 'vendidero-helper' ) ) {
 			self::add_product( 'vendidero-helper/vendidero-helper.php', 2198, array( 'free' => true ) );
 		}
 	}
