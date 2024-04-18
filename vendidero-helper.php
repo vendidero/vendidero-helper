@@ -7,7 +7,7 @@
  * Author: vendidero
  * Author URI: https://vendidero.de
  * Requires at least: 3.8
- * Tested up to: 6.4
+ * Tested up to: 6.5
  * Network: True
  *
  * Text Domain: vendidero-helper
