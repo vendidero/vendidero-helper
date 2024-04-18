@@ -17,7 +17,7 @@ class Updater {
 	}
 
 	public function update_check( $transient ) {
-		if ( is_null( $transient ) ) {
+		if ( is_null( $transient ) || false === $transient ) {
 			return $transient;
 		}
 
