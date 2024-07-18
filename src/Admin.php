@@ -6,8 +6,6 @@ defined( 'ABSPATH' ) || exit;
 
 class Admin {
 	public static function init() {
-		add_action( 'admin_init', array( __CLASS__, 'check_notice_hide' ) );
-		add_action( 'admin_notices', array( __CLASS__, 'expire_notice' ), 0 );
 		add_action( 'admin_menu', array( __CLASS__, 'add_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_scripts' ) );
 
@@ -16,8 +14,9 @@ class Admin {
 		add_filter( 'plugins_api', array( __CLASS__, 'plugins_api_filter' ), 150, 3 );
 		add_action( 'in_admin_header', array( __CLASS__, 'set_upgrade_notice' ) );
 
-		add_action( 'admin_notices', array( __CLASS__, 'product_registered' ) );
-		add_action( 'network_admin_notices', array( __CLASS__, 'product_registered' ) );
+		add_action( 'admin_notices', array( __CLASS__, 'product_status_notice' ) );
+		add_action( 'network_admin_notices', array( __CLASS__, 'product_status_notice' ) );
+		add_action( 'wp_ajax_vd_dismiss_notice', array( __CLASS__, 'dismiss_notice' ) );
 
 		add_action( 'admin_post_vd_refresh_license_status', array( __CLASS__, 'refresh_license_status' ) );
 
@@ -96,75 +95,6 @@ class Admin {
 		}
 
 		echo '<div class="error fade"><p>' . $message . '</p></div>' . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-	}
-
-	public static function check_notice_hide() {
-		if ( isset( $_GET['notice'] ) && 'vd-hide-notice' === $_GET['notice'] && check_admin_referer( 'vd-hide-notice', 'nonce' ) ) {
-			delete_option( 'vendidero_notice_expire' );
-			remove_action( 'admin_notices', array( __CLASS__, 'expire_notice' ), 0 );
-		}
-	}
-
-	protected static function maybe_output_expire_notice( $blog_id = null ) {
-		// Check whether license has been renewed already
-		$products     = $blog_id ? get_blog_option( $blog_id, 'vendidero_notice_expire' ) : get_option( 'vendidero_notice_expire' );
-		$new_products = array();
-
-		foreach ( $products as $key => $val ) {
-			if ( $product = Package::get_product( $key ) ) {
-				if ( $product->supports_renewals() ) {
-					if ( $expire = $product->get_expiration_date( false ) ) {
-						$diff = Package::get_date_diff( date( 'Y-m-d' ), $expire ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
-
-						if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
-							$new_products[ $key ] = true;
-						}
-					}
-				}
-			}
-		}
-
-		if ( ! empty( $new_products ) ) {
-			if ( $blog_id ) {
-				update_blog_option( $blog_id, 'vendidero_notice_expire', $new_products );
-			} else {
-				update_option( 'vendidero_notice_expire', $new_products );
-			}
-
-			include_once Package::get_path() . '/includes/screens/screen-notice-expire.php';
-		} else {
-			if ( $blog_id ) {
-				delete_blog_option( $blog_id, 'vendidero_notice_expire' );
-			} else {
-				delete_option( 'vendidero_notice_expire' );
-			}
-		}
-	}
-
-	public static function expire_notice() {
-		if ( is_multisite() && is_network_admin() ) {
-			$screen = get_current_screen();
-
-			if ( in_array( $screen->id, self::get_notice_excluded_screens(), true ) ) {
-				return;
-			}
-
-			foreach ( Package::get_products( false ) as $product ) {
-				foreach ( $product->get_blog_ids() as $blog_id ) {
-					if ( get_blog_option( $blog_id, 'vendidero_notice_expire' ) ) {
-						self::maybe_output_expire_notice( $blog_id );
-					}
-				}
-			}
-		} elseif ( get_option( 'vendidero_notice_expire' ) ) {
-			$screen = get_current_screen();
-
-			if ( in_array( $screen->id, self::get_notice_excluded_screens(), true ) ) {
-				return;
-			}
-
-			self::maybe_output_expire_notice();
-		}
 	}
 
 	public static function refresh_license_status() {
@@ -299,20 +229,74 @@ class Admin {
 		return array( 'index_page_vendidero-network', 'dashboard_page_vendidero', 'toplevel_page_vendidero', 'update-core-network', 'update-core' );
 	}
 
-	public static function product_registered() {
+	protected static function get_hidden_notices( $context = 'view' ) {
+		$notices = array_filter( (array) get_transient( '_vd_hide_notice' ) );
+
+		if ( 'view' === $context ) {
+			foreach ( self::get_notice_types() as $notice_type ) {
+				if ( ! array_key_exists( $notice_type, $notices ) ) {
+					$notices[ $notice_type ] = array();
+				}
+
+				$notices[ $notice_type ] = array_unique( (array) $notices[ $notice_type ] );
+			}
+		}
+
+		return $notices;
+	}
+
+	protected static function notice_is_hidden( $notice, $product_id = '-1' ) {
+		$notices = self::get_hidden_notices();
+
+		return array_key_exists( $notice, $notices ) && in_array( $product_id, $notices[ $notice ] ); // phpcs:ignore WordPress.PHP.StrictInArray.MissingTrueStrict
+	}
+
+	protected static function current_user_can_hide_notices() {
+		return current_user_can( 'manage_options' );
+	}
+
+	public static function dismiss_notice() {
+		check_ajax_referer( 'vd_dismiss_notice' );
+
+		if ( ! self::current_user_can_hide_notices() ) {
+			return;
+		}
+
+		$product_id = wc_clean( isset( $_POST['product_id'] ) ? wp_unslash( $_POST['product_id'] ) : '-1' );
+		$notice     = wc_clean( isset( $_POST['notice'] ) ? wp_unslash( $_POST['notice'] ) : '' );
+
+		if ( in_array( $notice, self::get_notice_types(), true ) ) {
+			$current_hidden_notices              = self::get_hidden_notices();
+			$current_hidden_notices[ $notice ][] = $product_id;
+
+			set_transient( '_vd_hide_notice', array_unique( $current_hidden_notices ), DAY_IN_SECONDS * 30 );
+
+			wp_send_json_success();
+		}
+
+		wp_send_json_error();
+	}
+
+	protected static function get_notice_types() {
+		return array( 'expired' );
+	}
+
+	public static function product_status_notice() {
 		$screen = get_current_screen();
 
 		if ( in_array( $screen->id, self::get_notice_excluded_screens(), true ) ) {
 			return;
 		}
 
-		$admin_url = Package::get_helper_url();
+		$admin_url              = Package::get_helper_url();
+		$has_dismissible_notice = false;
 
 		foreach ( Package::get_products( false ) as $product ) {
 			if ( is_multisite() && is_network_admin() ) {
 				foreach ( $product->get_blog_ids() as $blog_id ) {
-					$admin_url = Package::get_helper_url( $blog_id );
-					$blog_info = get_blog_details( $blog_id );
+					$admin_url         = Package::get_helper_url( $blog_id );
+					$blog_info         = get_blog_details( $blog_id );
+					$notice_product_id = $blog_id . '_' . $product->id;
 
 					if ( ! $product->is_registered( $blog_id ) ) {
 						?>
@@ -320,10 +304,16 @@ class Admin {
 							<p><?php printf( esc_html_x( 'Your %1$s license for %2$s doesn\'t seem to be registered. Please %3$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $blog_info->blogname ), '<a style="margin-left: 5px;" class="button button-secondary" href="' . esc_url( $admin_url ) . '">' . esc_html_x( 'manage your licenses', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?></p>
 						</div>
 						<?php
-					} elseif ( $product->supports_renewals() && $product->has_expired( $blog_id ) ) {
+					} elseif ( $product->supports_renewals() && $product->has_expired( $blog_id ) && ! self::notice_is_hidden( 'expired', $notice_product_id ) ) {
+						$has_dismissible_notice = true;
 						?>
-						<div class="error">
-							<p><?php printf( esc_html_x( 'Your %1$s license for %2$s has expired on %3$s. %4$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $blog_info->blogname ), esc_html( $product->get_expiration_date( get_option( 'date_format' ), $blog_id ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url( $blog_id ) ) . '">' . esc_html_x( 'renew now', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?></p>
+						<div class="vd-notice notice error <?php echo esc_attr( self::current_user_can_hide_notices() ? 'is-dismissible' : '' ); ?>" role="alert" data-id="expired" data-product_id="<?php echo esc_attr( $notice_product_id ); ?>">
+							<p>
+								<?php printf( esc_html_x( 'Your %1$s license for %2$s has expired on %3$s. %4$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $blog_info->blogname ), esc_html( $product->get_expiration_date( get_option( 'date_format' ), $blog_id ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url( $blog_id ) ) . '">' . esc_html_x( 'renew now', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?>
+								<?php if ( self::current_user_can_hide_notices() ) : ?>
+									<button type="button" href="#" class="notice-dismiss" style="bottom: 0;"></button>
+								<?php endif; ?>
+							</p>
 						</div>
 						<?php
 					}
@@ -334,13 +324,51 @@ class Admin {
 					<div class="error">
 						<p><?php printf( esc_html_x( 'Your %1$s license doesn\'t seem to be registered. Please %2$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', '<a style="margin-left: 5px;" class="button button-secondary" href="' . esc_url( $admin_url ) . '">' . esc_html_x( 'manage your licenses', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?></p>
 					</div>
-				<?php } elseif ( $product->has_expired() && $product->supports_renewals() ) { ?>
-					<div class="error">
-						<p><?php printf( esc_html_x( 'Your %1$s license has expired on %2$s. %3$s %4$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $product->get_expiration_date( get_option( 'date_format' ) ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url() ) . '">' . esc_html_x( 'renew now', 'vd-helper', 'vendidero-helper' ) . '</a>', '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $product->id ) ), 'vd-refresh-license-status' ) ) . '" class="" style="margin-left: 1em;">' . esc_html_x( 'Already renewed?', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?></p>
+					<?php
+				} elseif ( $product->has_expired() && $product->supports_renewals() && ! self::notice_is_hidden( 'expired', $product->id ) ) {
+					$has_dismissible_notice = true;
+					?>
+					<div class="vd-notice notice error <?php echo esc_attr( self::current_user_can_hide_notices() ? 'is-dismissible' : '' ); ?>" role="alert" data-id="expired" data-product_id="<?php echo esc_attr( $product->id ); ?>">
+						<p>
+							<?php printf( esc_html_x( 'Your %1$s license has expired on %2$s. %3$s %4$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $product->get_expiration_date( get_option( 'date_format' ) ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url() ) . '">' . esc_html_x( 'renew now', 'vd-helper', 'vendidero-helper' ) . '</a>', '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $product->id ) ), 'vd-refresh-license-status' ) ) . '" class="" style="margin-left: 1em;">' . esc_html_x( 'Already renewed?', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?>
+							<?php if ( self::current_user_can_hide_notices() ) : ?>
+								<button type="button" href="#" class="notice-dismiss" style="bottom: 0;"></button>
+							<?php endif; ?>
+						</p>
 					</div>
 					<?php
 				}
 			}
+		}
+
+		if ( $has_dismissible_notice ) {
+			?>
+			<script type="text/javascript" >
+				jQuery( document ).ready(function( $ ) {
+					$( '.vd-notice .notice-dismiss' ).click(function() {
+						var
+							notice           = $( this ).parents( '.vd-notice' ),
+							id               = notice.data( 'id' ),
+							product_id       = notice.data( 'product_id' );
+
+						notice.fadeOut( 'fast', function() {
+							var data = {
+								action    : 'vd_dismiss_notice',
+								_wpnonce  : <?php echo wp_json_encode( wp_create_nonce( 'vd_dismiss_notice' ) ); ?>,
+								notice    : id,
+								product_id: product_id
+							};
+
+							$.post( '<?php echo esc_url_raw( admin_url( 'admin-ajax.php' ) ); ?>', data, function( response ) {
+
+							});
+
+							notice.remove();
+						});
+					});
+				});
+			</script>
+			<?php
 		}
 	}
 

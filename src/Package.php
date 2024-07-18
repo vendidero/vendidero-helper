@@ -14,7 +14,7 @@ class Package {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.2.3';
+	const VERSION = '2.2.4';
 
 	/**
 	 * @var null|Product[]
@@ -121,14 +121,7 @@ class Package {
 	}
 
 	public static function expire_cron() {
-		$notice = get_option( 'vendidero_notice_expire', array() );
-
 		foreach ( self::get_products( false ) as $key => $product ) {
-			if ( ! $product->is_registered() ) {
-				unset( $notice[ $key ] );
-				continue;
-			}
-
 			if ( $product->supports_renewals() ) {
 				// Refresh expiration date
 				$product->refresh_expiration_date( true );
@@ -137,23 +130,11 @@ class Package {
 					$diff = self::get_date_diff( date( 'Y-m-d' ), $expire ); // phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date
 
 					if ( ( strtotime( $expire ) <= time() ) || ( empty( $diff['y'] ) && empty( $diff['m'] ) && $diff['d'] <= 7 ) ) {
-						$notice[ $key ] = true;
-
 						delete_transient( "_vendidero_helper_updates_{$product->id}" );
 						delete_transient( "_vendidero_helper_update_info_{$product->id}" );
-					} elseif ( strtotime( $expire ) > time() ) {
-						unset( $notice[ $key ] );
 					}
 				}
-			} else {
-				unset( $notice[ $key ] );
 			}
-		}
-
-		if ( empty( $notice ) ) {
-			delete_option( 'vendidero_notice_expire' );
-		} else {
-			update_option( 'vendidero_notice_expire', $notice );
 		}
 	}
 
