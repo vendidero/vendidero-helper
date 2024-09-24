@@ -318,26 +318,25 @@ class Admin {
 						<?php
 					}
 				}
-			} else {
-				if ( ! $product->is_registered() ) {
-					?>
+			} elseif ( ! $product->is_registered() ) {
+				?>
 					<div class="error">
 						<p><?php printf( esc_html_x( 'Your %1$s license doesn\'t seem to be registered. Please %2$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', '<a style="margin-left: 5px;" class="button button-secondary" href="' . esc_url( $admin_url ) . '">' . esc_html_x( 'manage your licenses', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?></p>
 					</div>
 					<?php
-				} elseif ( $product->has_expired() && $product->supports_renewals() && ! self::notice_is_hidden( 'expired', $product->id ) ) {
-					$has_dismissible_notice = true;
-					?>
+			} elseif ( $product->has_expired() && $product->supports_renewals() && ! self::notice_is_hidden( 'expired', $product->id ) ) {
+				$has_dismissible_notice = true;
+				?>
 					<div class="vd-notice notice error <?php echo esc_attr( self::current_user_can_hide_notices() ? 'is-dismissible' : '' ); ?>" role="alert" data-id="expired" data-product_id="<?php echo esc_attr( $product->id ); ?>">
 						<p>
-							<?php printf( esc_html_x( 'Your %1$s license has expired on %2$s. %3$s %4$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $product->get_expiration_date( get_option( 'date_format' ) ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url() ) . '">' . esc_html_x( 'renew now', 'vd-helper', 'vendidero-helper' ) . '</a>', '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $product->id ) ), 'vd-refresh-license-status' ) ) . '" class="" style="margin-left: 1em;">' . esc_html_x( 'Already renewed?', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?>
-							<?php if ( self::current_user_can_hide_notices() ) : ?>
+						<?php printf( esc_html_x( 'Your %1$s license has expired on %2$s. %3$s %4$s', 'vd-helper', 'vendidero-helper' ), '<strong>' . esc_attr( $product->Name ) . '</strong>', esc_html( $product->get_expiration_date( get_option( 'date_format' ) ) ), '<a style="margin-left: 5px;" class="button button-primary wc-gzd-button" target="_blank" href="' . esc_url( $product->get_renewal_url() ) . '">' . esc_html_x( 'renew now', 'vd-helper', 'vendidero-helper' ) . '</a>', '<a href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $product->id ) ), 'vd-refresh-license-status' ) ) . '" class="" style="margin-left: 1em;">' . esc_html_x( 'Already renewed?', 'vd-helper', 'vendidero-helper' ) . '</a>' ); ?>
+						<?php if ( self::current_user_can_hide_notices() ) : ?>
 								<button type="button" href="#" class="notice-dismiss" style="bottom: 0;"></button>
 							<?php endif; ?>
 						</p>
 					</div>
 					<?php
-				}
+
 			}
 		}
 

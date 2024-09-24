@@ -66,10 +66,8 @@ class Install {
 				if ( Package::is_integration() ) {
 					delete_option( 'vendidero_version' );
 				}
-			} else {
-				if ( Package::is_integration() ) {
+			} elseif ( Package::is_integration() ) {
 					deactivate_plugins( 'vendidero-helper/vendidero-helper.php', true );
-				}
 			}
 		}
 	}
@@ -82,5 +80,3 @@ class Install {
 		}
 	}
 }
-
-

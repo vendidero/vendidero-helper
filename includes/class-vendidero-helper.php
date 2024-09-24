@@ -26,11 +26,9 @@ final class Vendidero_Helper {
 	}
 
 	public function load() {
-
 	}
 
 	public function init() {
-
 	}
 
 	public function get_product( $key ) {

@@ -258,5 +258,3 @@ class Api {
 		return json_decode( wp_json_encode( $object ), true );
 	}
 }
-
-
