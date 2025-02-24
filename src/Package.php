@@ -56,7 +56,7 @@ class Package {
 		// Allow local url for testing purposes
 		if ( self::is_debug_mode() ) {
 			add_filter( 'http_request_host_is_external', array( __CLASS__, 'allow_local_urls' ) );
-			add_filter( 'http_request_args', array( __CLASS__, 'disable_ssl_verify' ), 10, 1 );
+			add_filter( 'http_request_args', array( __CLASS__, 'maybe_disable_ssl_verify' ), 10, 1 );
 		}
 
 		add_action( 'upgrader_pre_download', array( __CLASS__, 'block_expired_updates' ), 50, 2 );
@@ -68,6 +68,10 @@ class Package {
 		if ( is_admin() ) {
 			Admin::init();
 		}
+	}
+
+	public static function disable_ssl_verify() {
+		return apply_filters( 'vd_helper_disable_ssl_verify', self::is_debug_mode() );
 	}
 
 	public static function is_debug_mode() {
@@ -199,8 +203,9 @@ class Package {
 		return $hosts;
 	}
 
-	public static function disable_ssl_verify( $args ) {
-		$args['sslverify'] = false;
+	public static function maybe_disable_ssl_verify( $args ) {
+		$args['sslverify'] = self::disable_ssl_verify();
+
 		return $args;
 	}
 
@@ -385,7 +390,7 @@ class Package {
 
 	public static function ssl_verify( $args, $url ) {
 		if ( is_admin() ) {
-			if ( apply_filters( 'vd_helper_disable_ssl_verify', false ) && (string) self::get_api_url() === (string) $url ) {
+			if ( self::disable_ssl_verify() && (string) self::get_api_url() === (string) $url ) {
 				$args['sslverify'] = false;
 			}
 		}

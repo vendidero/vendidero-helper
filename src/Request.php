@@ -59,7 +59,6 @@ class Request {
 					'blocking'    => true,
 					'headers'     => array( 'user-agent' => 'Vendidero/' . Package::get_version() ),
 					'cookies'     => array(),
-					'sslverify'   => false,
 				)
 			);
 		} else {
@@ -72,7 +71,6 @@ class Request {
 					'headers'     => array( 'user-agent' => 'Vendidero/' . Package::get_version() ),
 					'body'        => $this->args,
 					'cookies'     => array(),
-					'sslverify'   => false,
 				)
 			);
 		}
