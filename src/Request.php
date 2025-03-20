@@ -12,7 +12,7 @@ class Request {
 	private $args     = array();
 	private $code     = 500;
 
-	public function __construct( $type = 'ping', Product $product = null, $args = array() ) {
+	public function __construct( $type = 'ping', $product = null, $args = array() ) {
 		$default_args = array(
 			'method'  => 'GET',
 			'request' => $type,
