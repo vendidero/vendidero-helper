@@ -20,7 +20,7 @@
 
 span.vd-inline-upgrade-expire-notice {
 	display: inline-block;
-	margin: 5px 0px !important;
+	margin: 5px 0 !important;
 	border-left: 4px solid #dc3232;
 	padding: 1px 12px !important;
 }
@@ -31,18 +31,6 @@ span.vd-inline-upgrade-expire-notice {
 
 .vd-wrapper .table-wrap {
 	max-width: 100%;
-}
-
-.vd-wrapper .column-product_status {
-	text-align: right;
-}
-
-.vd-wrapper .column-product_expires {
-	width: 15ch;
-}
-
-.vd-wrapper .column-product_name {
-	width: 35ch;
 }
 
 .vd-wrapper .version {
@@ -74,26 +62,108 @@ span.vd-inline-upgrade-expire-notice {
 	width: 30ch;
 }
 
+table.licenses tfoot {
+	display: none;
+}
+
+table.licenses tr:nth-child(even) td {
+	background: #f9f9f9;
+}
+
 table.licenses thead th, table.licenses tfoot th {
-	padding: 0.75em 1em;
 	width: 12ch;
 	vertical-align: middle;
-}
-
-table.licenses thead th.column-product_status, table.licenses tfoot th.column-product_status {
-	width: 15ch;
-}
-
-table.licenses thead th.column-product_version, table.licenses tfoot th.column-product_version {
-	width: 20ch;
+	font-weight: 600;
+	padding: 1em;
+	font-size: 14px;
 }
 
 table.licenses tbody td {
 	vertical-align: middle;
+	padding: 24px 12px;
+	font-size: 14px;
 }
 
 table.licenses tbody p {
 	margin-bottom: 2px;
+}
+
+table.licenses tbody a.vd-help-link {
+	font-size: 12px;
+}
+
+table.licenses thead th.column-product_status,
+table.licenses tfoot th.column-product_status,
+table.licenses tbody td.column-product_status {
+	width: 35ch;
+	text-align: right;
+}
+
+table.licenses tbody td.column-product_status .forminp {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+table.licenses tbody td.column-product_status .forminp input[type=text] {
+	min-width: 250px;
+	height: 35px;
+	margin-right: 10px;
+}
+
+table.licenses .button {
+	height: 35px;
+	position: relative;
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+}
+
+table.licenses .vd-inline-error {
+	margin-top: 5px;
+	display: inline-flex;
+	font-size: 11px;
+	align-items: center;
+}
+
+table.licenses .vd-inline-error p,
+table.licenses .vd-inline-error code {
+	font-size: 11px;
+}
+
+table.licenses .vd-inline-error .dashicons {
+	margin-right: 5px;
+	color: #d63638;
+}
+
+table.licenses .button.vd-is-loading .btn-text {
+	opacity: .3;
+	z-index: 0;
+}
+
+table.licenses .button.vd-is-loading .spinner {
+	position: absolute;
+	opacity: 1;
+	z-index: 5;
+	background-size: 16px 16px;
+	float: none;
+	text-align: center;
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+	margin: 0;
+}
+
+table.licenses thead th.column-product_name,
+table.licenses tfoot th.column-product_name,
+table.licenses tbody td.column-product_name {
+	width: 35ch;
+}
+
+table.licenses thead th.column-product_version,
+table.licenses tfoot th.column-product_version,
+table.licenses tbody td.column-product_version {
+	width: 20ch;
 }
 
 table.licenses .column-product_version, table.licenses .column-product_expires {
@@ -111,4 +181,8 @@ table.licenses td.product_expires a.refresh-expiration {
 	color: #50575e;
 	text-decoration: underline;
 	margin-left: 0;
+}
+
+.vd-single-wrapper .tablenav {
+	display: none;
 }

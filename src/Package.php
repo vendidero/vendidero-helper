@@ -14,7 +14,7 @@ class Package {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.2.5';
+	const VERSION = '2.3.0';
 
 	/**
 	 * @var null|Product[]
@@ -102,7 +102,7 @@ class Package {
 	}
 
 	public static function maybe_run_fallback_cron() {
-		if ( ! function_exists( 'as_next_scheduled_action' ) || false === as_next_scheduled_action( 'vd_helper_daily', array(), 'vd_helper' ) ) {
+		if ( ! function_exists( 'as_next_scheduled_action' ) || false === as_next_scheduled_action( 'vd_helper_daily', array() ) ) {
 			self::expire_cron();
 		}
 	}
@@ -112,7 +112,7 @@ class Package {
 			return;
 		}
 
-		if ( false === as_next_scheduled_action( 'vd_helper_daily', array(), 'vd_helper' ) ) {
+		if ( self::get_products( false ) && false === as_next_scheduled_action( 'vd_helper_daily', array() ) ) {
 			$timestamp = strtotime( 'tomorrow midnight' );
 			$date      = new \DateTime();
 
@@ -244,40 +244,41 @@ class Package {
 			$products[ $product->file ] = $product;
 		}
 
-		if ( is_multisite() && is_network_admin() ) {
-			foreach ( get_sites(
-				array(
-					'public'   => 1,
-					'spam'     => 0,
-					'deleted'  => 0,
-					'archived' => 0,
-				)
-			) as $site ) {
-				switch_to_blog( $site->blog_id );
-				ExtensionHelper::clear_cache();
-
-				foreach ( $products as $file => $product ) {
-					if ( ExtensionHelper::is_plugin_active( $file ) || ExtensionHelper::is_theme_active( $file ) ) {
-						if ( ! isset( $products[ $file ]->blog_ids ) ) {
-							$products[ $file ]->blog_ids = array();
-						}
-
-						$products[ $file ]->blog_ids[] = $site->blog_id;
-					}
-				}
-				restore_current_blog();
-			}
-		}
-
 		if ( ! empty( $products ) && is_array( $products ) ) {
+			if ( is_multisite() && is_network_admin() ) {
+				foreach ( get_sites(
+					array(
+						'public'   => 1,
+						'spam'     => 0,
+						'deleted'  => 0,
+						'archived' => 0,
+					)
+				) as $site ) {
+					switch_to_blog( $site->blog_id );
+					ExtensionHelper::clear_cache();
+
+					foreach ( $products as $file => $product ) {
+						if ( ExtensionHelper::is_plugin_active( $file ) || ExtensionHelper::is_theme_active( $file ) ) {
+							if ( ! isset( $products[ $file ]->blog_ids ) ) {
+								$products[ $file ]->blog_ids = array();
+							}
+
+							$products[ $file ]->blog_ids[] = $site->blog_id;
+						}
+					}
+					restore_current_blog();
+				}
+			}
+
 			foreach ( $products as $product ) {
 				if ( is_object( $product ) && ! empty( $product->file ) && ! empty( $product->product_id ) ) {
 					self::add_product(
 						$product->file,
 						$product->product_id,
 						array(
-							'supports_renewals' => isset( $product->supports_renewals ) ? $product->supports_renewals : true,
-							'blog_ids'          => isset( $product->blog_ids ) ? $product->blog_ids : array(),
+							'supports_renewals'   => isset( $product->supports_renewals ) ? $product->supports_renewals : true,
+							'blog_ids'            => isset( $product->blog_ids ) ? $product->blog_ids : array(),
+							'single_license_page' => isset( $product->single_license_page ) ? $product->single_license_page : false,
 						)
 					);
 				}
@@ -285,14 +286,20 @@ class Package {
 		}
 
 		/**
-		 * In case this installation is not an integration, register
-		 * the helper as a product to make sure it may be updated too.
+		 * In case this installation is not an integration, register the helper as a product to make sure it may be updated too.
 		 */
 		if ( ! self::is_integration() || ExtensionHelper::is_plugin_active( 'vendidero-helper' ) ) {
 			self::add_product( 'vendidero-helper/vendidero-helper.php', 2198, array( 'free' => true ) );
 		}
 	}
 
+	/**
+	 * @param $file
+	 * @param $product_id
+	 * @param $args
+	 *
+	 * @return false|Product|Theme
+	 */
 	public static function add_product( $file, $product_id, $args = array() ) {
 		if ( is_null( self::$products ) ) {
 			self::$products = array();
@@ -303,9 +310,10 @@ class Package {
 		$args = wp_parse_args(
 			$args,
 			array(
-				'free'              => false,
-				'blog_ids'          => array(),
-				'supports_renewals' => true,
+				'free'                => false,
+				'blog_ids'            => array(),
+				'supports_renewals'   => true,
+				'single_license_page' => false,
 			)
 		);
 
@@ -321,14 +329,14 @@ class Package {
 
 			self::$products[ $file ] = ( $is_theme ? new Theme( $file, $product_id, $args ) : new Product( $file, $product_id, $args ) );
 
-			return true;
+			return self::$products[ $file ];
 		}
 
 		return false;
 	}
 
 	public static function remove_product( $file ) {
-		$products = self::get_products();
+		self::get_products();
 		$response = false;
 
 		if ( '' !== $file && in_array( $file, array_keys( self::$products ), true ) ) {
@@ -337,6 +345,10 @@ class Package {
 		}
 
 		return $response;
+	}
+
+	public static function clear_product_cache() {
+		self::$products = null;
 	}
 
 	/**
@@ -524,6 +536,10 @@ class Package {
 		return self::$is_integration;
 	}
 
+	public static function is_standalone() {
+		return defined( 'VD_IS_STANDALONE_PLUGIN' ) && VD_IS_STANDALONE_PLUGIN;
+	}
+
 	/**
 	 * Return the version of the package.
 	 *
@@ -562,7 +578,7 @@ class Package {
 	}
 
 	public static function log( $message, $type = 'info' ) {
-		$logger = wc_get_logger();
+		$logger = function_exists( 'wc_get_logger' ) ? wc_get_logger() : null;
 
 		if ( ! $logger || ! apply_filters( 'vd_helper_enable_logging', true ) ) {
 			return;

@@ -11,31 +11,34 @@ class Product {
 	public $file;
 	public $id;
 	public $slug;
-	public $free              = false;
-	public $theme             = false;
-	protected $meta           = array();
-	public $updater           = null;
-	public $blog_ids          = array();
-	public $home_url          = array();
-	public $supports_renewals = true;
+	public $free                = false;
+	public $theme               = false;
+	protected $meta             = array();
+	public $updater             = null;
+	public $blog_ids            = array();
+	public $home_url            = array();
+	public $single_license_page = false;
+	public $supports_renewals   = true;
 
 	public function __construct( $file, $product_id, $args = array() ) {
 		$args = wp_parse_args(
 			$args,
 			array(
-				'free'              => false,
-				'blog_ids'          => array(),
-				'supports_renewals' => true,
-				'meta'              => array(),
+				'free'                => false,
+				'blog_ids'            => array(),
+				'supports_renewals'   => true,
+				'meta'                => array(),
+				'single_license_page' => false,
 			)
 		);
 
-		$this->id                = $product_id;
-		$this->file              = $file;
-		$this->free              = $args['free'];
-		$this->blog_ids          = $args['blog_ids'];
-		$this->supports_renewals = $args['supports_renewals'];
-		$this->home_url          = array();
+		$this->id                  = $product_id;
+		$this->file                = $file;
+		$this->free                = $args['free'];
+		$this->blog_ids            = $args['blog_ids'];
+		$this->supports_renewals   = $args['supports_renewals'];
+		$this->single_license_page = $args['single_license_page'];
+		$this->home_url            = array();
 
 		if ( ! empty( $this->blog_ids ) ) {
 			foreach ( $this->blog_ids as $blog_id ) {
@@ -95,6 +98,14 @@ class Product {
 		return $this->free;
 	}
 
+	public function get_id() {
+		return $this->id;
+	}
+
+	public function get_license_page( $blog_id = null ) {
+		return $this->single_license_page && is_null( $blog_id ) ? $this->single_license_page : Package::get_helper_url( $blog_id );
+	}
+
 	public function get_renewal_url( $blog_id = null ) {
 		return $this->get_url() . '?renew=true&license=' . $this->get_key( $blog_id );
 	}
@@ -124,12 +135,34 @@ class Product {
 		}
 	}
 
+	public function get_errors() {
+		$options = $this->get_options();
+
+		return (array) $options['errors'];
+	}
+
+	public function has_errors() {
+		$errors = $this->get_errors();
+
+		return ! empty( $errors );
+	}
+
 	public function refresh_expiration_date( $force = false ) {
 		if ( $this->is_registered() ) {
+			if ( $this->has_errors() ) {
+				$force = true;
+			}
+
 			$expire = Package::get_api()->expiration_check( $this, $force );
 
 			if ( ! is_wp_error( $expire ) ) {
 				$this->set_expiration_date( $expire );
+			} else {
+				$this->update_options(
+					array(
+						'errors' => $expire->get_error_messages(),
+					)
+				);
 			}
 
 			return $expire;
@@ -179,6 +212,39 @@ class Product {
 		return false;
 	}
 
+	public function expires_soon( $blog_id = null ) {
+		if ( is_null( $blog_id ) && ! empty( $this->blog_ids ) ) {
+			$expires_soon = false;
+
+			foreach ( $this->blog_ids as $blog_id ) {
+				if ( $this->expires_soon( $blog_id ) ) {
+					$expires_soon = true;
+					break;
+				}
+			}
+
+			return $expires_soon;
+		} else {
+			if ( ! $this->is_registered( $blog_id ) || ! $this->get_expires( $blog_id ) ) {
+				return false;
+			}
+
+			try {
+				$current = new \DateTime();
+				$expires = new \DateTime( $this->get_expires( $blog_id ) );
+				$diff    = $current->diff( $expires );
+
+				if ( ! $this->has_expired( $blog_id ) && $diff->days <= 14 ) {
+					return true;
+				}
+			} catch ( \Exception $e ) {
+				return false;
+			}
+		}
+
+		return false;
+	}
+
 	public function get_expired_blog_id() {
 		if ( ! empty( $this->blog_ids ) ) {
 			foreach ( $this->blog_ids as $blog_id ) {
@@ -195,6 +261,7 @@ class Product {
 		$default_options = array(
 			'key'     => '',
 			'expires' => null,
+			'errors'  => array(),
 		);
 
 		if ( is_null( $blog_id ) ) {
@@ -208,20 +275,17 @@ class Product {
 		}
 
 		if ( isset( $options[ $this->file ] ) ) {
-			return wp_parse_args( $options[ $this->file ], $default_options );
+			$options           = wp_parse_args( $options[ $this->file ], $default_options );
+			$options['errors'] = array_filter( (array) $options['errors'] );
+
+			return $options;
 		}
 
 		return $default_options;
 	}
 
 	protected function update_options( $data, $blog_id = null ) {
-		$data = wp_parse_args(
-			$data,
-			array(
-				'key'     => '',
-				'expires' => null,
-			)
-		);
+		$data = (array) $data;
 
 		if ( is_null( $blog_id ) ) {
 			$options = get_option( 'vendidero_registered', array() );
@@ -229,8 +293,19 @@ class Product {
 			$options = get_blog_option( $blog_id, 'vendidero_registered', array() );
 		}
 
-		$options[ $this->file ] = $data;
-		$this->options          = null;
+		$options[ $this->file ] = wp_parse_args(
+			isset( $options[ $this->file ] ) ? $options[ $this->file ] : array(),
+			array(
+				'key'     => '',
+				'expires' => null,
+				'errors'  => array(),
+			)
+		);
+
+		$options[ $this->file ]           = array_replace_recursive( $options[ $this->file ], $data );
+		$options[ $this->file ]['errors'] = is_array( $options[ $this->file ]['errors'] ) ? $options[ $this->file ]['errors'] : array();
+
+		$this->options = null;
 
 		if ( is_null( $blog_id ) ) {
 			return update_option( 'vendidero_registered', $options );
@@ -243,16 +318,20 @@ class Product {
 		$registered = array(
 			'key'     => md5( $key ),
 			'expires' => $expires,
+			'errors'  => null,
 		);
 
 		$this->update_options( $registered );
 	}
 
 	public function set_expiration_date( $expires, $blog_id = null ) {
-		$options            = $this->get_options( $blog_id );
-		$options['expires'] = $expires;
-
-		$this->update_options( $options, $blog_id );
+		$this->update_options(
+			array(
+				'expires' => $expires,
+				'errors'  => null,
+			),
+			$blog_id
+		);
 	}
 
 	public function unregister() {

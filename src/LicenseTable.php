@@ -38,13 +38,7 @@ class LicenseTable extends \WP_List_Table {
 	}
 
 	public function column_default( $item, $column_name ) {
-		switch ( $column_name ) {
-			case 'product':
-			case 'product_status':
-			case 'product_version':
-			case 'product_expires':
-				return $item[ $column_name ];
-		}
+		return $item[ $column_name ];
 	}
 
 	public function get_sortable_columns() {
@@ -54,115 +48,109 @@ class LicenseTable extends \WP_List_Table {
 	public function get_columns() {
 		$columns = array(
 			'product_name'    => _x( 'Product', 'vd-helper', 'vendidero-helper' ),
-			'product_version' => _x( 'Version', 'vd-helper', 'vendidero-helper' ),
-			'product_expires' => _x( 'Update & Support', 'vd-helper', 'vendidero-helper' ),
-			'product_status'  => _x( 'License Key', 'vd-helper', 'vendidero-helper' ),
+			'product_version' => _x( 'Current version', 'vd-helper', 'vendidero-helper' ),
+			'product_expires' => _x( 'Updates & Support', 'vd-helper', 'vendidero-helper' ),
+			'product_status'  => _x( 'License', 'vd-helper', 'vendidero-helper' ),
 		);
 
 		return $columns;
 	}
 
 	protected function get_table_classes() {
-		return array_merge( parent::get_table_classes(), array( 'posts' ) );
+		$classes = array_merge( parent::get_table_classes(), array( 'posts' ) );
+
+		return array_diff( $classes, array( 'striped' ) );
 	}
 
 	/**
 	 * @param Product $item
-	 *
-	 * @return string
 	 */
 	public function column_product_name( $item ) {
-		echo wpautop( '<strong title="' . esc_attr( $item->file ) . '">' . esc_html( $item->Name ) . '</strong>' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-
 		$count = 0;
+		?>
+		<p>
+			<strong title="<?php echo esc_attr( $item->file ); ?>"><?php echo esc_html( $item->Name ); ?></strong>
+		</p>
 
-		echo '<span class="active-on">';
+		<span class="active-on">
+			<?php foreach ( $item->get_home_url() as $url ) : ?>
+				<?php echo ( ( ++$count > 1 ) ? ', ' : '' ) . esc_url( $url ); ?>
+			<?php endforeach; ?>
+		</span>
 
-		foreach ( $item->get_home_url() as $url ) {
-			echo ( ( ++$count > 1 ) ? ', ' : '' ) . esc_url( $url );
-		}
-
-		echo '</span>';
+		<?php if ( $item->has_errors() ) : ?>
+			<?php foreach ( $item->get_errors() as $error_message ) : ?>
+				<div class="vd-inline-error">
+					<span class="dashicons dashicons-warning"></span>
+					<?php echo wp_kses_post( wpautop( $error_message ) ); ?>
+				</div>
+			<?php endforeach; ?>
+		<?php endif; ?>
+		<?php
 	}
 
 	/**
 	 * @param Product $item
-	 *
-	 * @return string
 	 */
 	public function column_product_expires( $item ) {
-		if ( $item->get_expiration_date() ) {
-
-			if ( $item->has_expired() && $item->supports_renewals() ) {
-				$return = '<a href="' . esc_url( $item->get_renewal_url() ) . '" class="button button-primary wc-gzd-button" target="_blank">' . _x( 'renew now', 'vd-helper', 'vendidero-helper' ) . '</a>';
-			} else {
-				$return = $item->get_expiration_date();
-			}
-
-			if ( $item->supports_renewals() ) {
-				$return .= '<a class="refresh-expiration" href="' . esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=vd_refresh_license_status&product_id=' . esc_attr( $item->id ) ), 'vd-refresh-license-status' ) ) . '">' . _x( 'Refresh', 'vd-helper', 'vendidero-helper' ) . '</a>';
-			}
-
-			return $return;
-		}
-
-		return '-';
+		if ( $item->get_expiration_date() ) :
+			if ( $item->has_expired() && $item->supports_renewals() ) :
+				?>
+				<a href="<?php echo esc_url( $item->get_renewal_url() ); ?>" class="button button-primary wc-gzd-button" target="_blank"><?php echo esc_html_x( 'renew now', 'vd-helper', 'vendidero-helper' ); ?></a>
+			<?php else : ?>
+				<?php echo esc_html( $item->get_expiration_date() ); ?>
+			<?php endif; ?>
+		<?php else : ?>
+			<?php echo '-'; ?>
+			<?php
+		endif;
 	}
 
 	/**
 	 * @param Product $item
-	 *
-	 * @return string
 	 */
 	public function column_product_version( $item ) {
 		$latest          = Package::get_api()->info( $item );
 		$current_version = $item->Version;
-		$status          = 'latest';
-		$new_version     = '';
+		$is_obsolete     = $latest && version_compare( $latest->version, $current_version, '>' );
+		$status          = $is_obsolete ? 'old' : 'latest';
+		?>
+		<span class="version version-<?php echo esc_attr( $status ); ?>"><?php echo esc_html( $current_version ); ?></span>
 
-		if ( $latest ) {
-			if ( version_compare( $latest->version, $current_version, '>' ) ) {
-				$update_url  = ( is_multisite() ? network_admin_url( 'update-core.php?force-check=1' ) : admin_url( 'update-core.php?force-check=1' ) );
-				$status      = 'old';
-				$new_version = _x( 'vs.', 'vd-helper', 'vendidero-helper' ) . ' <span class="version version-latest">' . $latest->version . '</span>';
+		<?php
+		if ( $is_obsolete && $latest ) :
+			$update_url = ( is_multisite() ? network_admin_url( 'update-core.php?force-check=1' ) : admin_url( 'update-core.php?force-check=1' ) );
+			?>
+			<?php echo esc_html_x( 'vs.', 'vd-helper', 'vendidero-helper' ); ?> <span class="version version-latest"><?php echo esc_html( $latest->version ); ?></span>
 
-				if ( ! $item->has_expired() ) {
-					$new_version .= '<br/><a class="button button-secondary" href="' . esc_url( $update_url ) . '">' . esc_html_x( 'Check for updates', 'vd-helper', 'vendidero-helper' ) . '</a>';
-				}
-			}
-		}
-
-		echo '<span class="version version-' . esc_attr( $status ) . '">' . esc_html( $current_version ) . '</span>';
-
-		if ( ! empty( $new_version ) ) {
-			echo wp_kses_post( $new_version );
-		}
+			<?php if ( ! $item->has_expired() ) : ?>
+				<br/><a class="button button-secondary" href="<?php echo esc_url( $update_url ); ?> "><?php echo esc_html_x( 'Check for updates', 'vd-helper', 'vendidero-helper' ); ?></a>
+				<?php
+			endif;
+		endif;
 	}
 
 	/**
 	 * @param Product $item
-	 *
-	 * @return string
 	 */
 	public function column_product_status( $item ) {
-		$response = '';
-
-		if ( $item->is_registered() ) {
-			$base_url = admin_url( 'index.php' );
-
-			$unregister_url = wp_nonce_url( add_query_arg( 'action', 'vd_unregister', add_query_arg( 'filepath', $item->file, add_query_arg( 'page', 'vendidero', $base_url ) ) ), 'bulk_licenses' );
-			$response       = '<a href="' . esc_url( $unregister_url ) . '">' . _x( 'Unregister', 'vd-helper', 'vendidero-helper' ) . '</a>' . "\n";
-		} else {
-			$response .= '<input name="license_keys[' . esc_attr( $item->file ) . ']" id="license_keys-' . esc_attr( $item->file ) . '" type="text" value="" style="width: 100%" aria-required="true" placeholder="' . esc_attr( _x( 'Enter license key', 'vd-helper', 'vendidero-helper' ) ) . '" /><br/>';
-			$response .= '<a href="https://vendidero.de/dashboard/products/" target="_blank">' . _x( 'Find your license key', 'vd-helper', 'vendidero-helper' ) . '</a>';
-		}
-
-		return $response;
+		if ( $item->is_registered() ) :
+			?>
+			<a href="#" class="button button-secondary vd-unregister-license" data-file="<?php echo esc_attr( $item->file ); ?>"><span class="btn-text"><?php echo esc_html_x( 'Unregister', 'vd-helper', 'vendidero-helper' ); ?></span></a>
+		<?php else : ?>
+			<div class="forminp">
+				<input name="license_key_<?php echo esc_attr( $item->file ); ?>" id="license_keys-<?php echo esc_attr( $item->file ); ?>" type="text" class="license-key-input" value="" aria-required="true" placeholder="<?php echo esc_html_x( 'Enter license key', 'vd-helper', 'vendidero-helper' ); ?>" />
+				<button class="button button-primary vd-register-license" type="submit" value="submit" data-file="<?php echo esc_attr( $item->file ); ?>">
+					<span class="btn-text"><?php echo esc_html_x( 'Register', 'vd-helper', 'vendidero-helper' ); ?></span>
+				</button>
+			</div>
+			<a class="vd-help-link" href="<?php echo esc_url( sprintf( _x( 'https://vendidero.com/products/latest/%s', 'vd-helper', 'vendidero-helper' ), $item->id ) ); ?>" target="_blank"><?php echo esc_html_x( 'Find your license key', 'vd-helper', 'vendidero-helper' ); ?></a>
+			<?php
+		endif;
 	}
 
 	public function get_bulk_actions() {
-		$actions = array();
-		return $actions;
+		return array();
 	}
 
 	public function prepare_items() {

@@ -153,6 +153,43 @@ class Api {
 		return ! empty( $data['errors'] ) ? false : $data['payload'];
 	}
 
+	/**
+	 * @param Product $product
+	 * @param $key
+	 *
+	 * @return \WP_Error|string
+	 */
+	public function get_download_link( Product $product, $key = '' ) {
+		$request = new Request(
+			"releases/{$product->id}/latest",
+			$product,
+			array(
+				'key' => $key,
+			)
+		);
+
+		$response = $request->get_response();
+		$errors   = new \WP_Error();
+
+		if ( is_object( $response ) && ! empty( $response->package ) ) {
+			return $response->package;
+		} else {
+			if ( $request->is_error() ) {
+				foreach ( $response->get_error_messages() as $code => $message ) {
+					$errors->add( $code, $message, $response->get_error_data( $code ) );
+				}
+			} elseif ( $request->get_response( 'notice' ) ) {
+				foreach ( (array) $request->get_response( 'notice' ) as $notice ) {
+					$errors->add( 'download_error', $notice );
+				}
+			} else {
+				$errors->add( 'download_error', _x( 'The plugin could not be downloaded.', 'vd-helper', 'vendidero-helper' ) );
+			}
+
+			return $errors;
+		}
+	}
+
 	private function update_check_callback( Product $product, $key = '' ) {
 		$cache_key = "_vendidero_helper_updates_{$product->id}";
 		$data      = get_transient( $cache_key );
