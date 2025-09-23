@@ -14,7 +14,7 @@ class Package {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.3.0';
+	const VERSION = '2.3.1';
 
 	/**
 	 * @var null|Product[]
@@ -229,7 +229,12 @@ class Package {
 	}
 
 	public static function get_available_plugins() {
-		return array();
+		return array(
+			(object) array(
+				'file'       => 'woocommerce-germanized-pro/woocommerce-germanized-pro.php',
+				'product_id' => 148,
+			),
+		);
 	}
 
 	public static function get_available_themes() {
@@ -237,10 +242,14 @@ class Package {
 	}
 
 	protected static function register_products() {
+		/**
+		 * The helper needs to know about the available extensions to update to
+		 * support multisite setups where an extension may only be visible/activated on a sub-site.
+		 */
 		$product_data = apply_filters( 'vendidero_updateable_products', array() );
-		$products     = array();
+		$product_list = array_merge( self::get_available_themes(), self::get_available_plugins(), $product_data );
 
-		foreach ( $product_data as $product ) {
+		foreach ( $product_list as $product ) {
 			$products[ $product->file ] = $product;
 		}
 
