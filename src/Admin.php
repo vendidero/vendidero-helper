@@ -205,6 +205,14 @@ class Admin {
 			}
 		}
 
+        if ( is_multisite() && ! is_network_admin() ) {
+            $products = Package::get_products( false );
+
+            if ( empty( $products ) ) {
+                $add_global_page = false;
+            }
+        }
+
 		if ( $add_global_page ) {
 			add_dashboard_page( 'vendidero', 'vendidero', 'manage_options', 'vendidero', array( __CLASS__, 'screen' ) );
 		} else {

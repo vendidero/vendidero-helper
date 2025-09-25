@@ -14,7 +14,7 @@ class Package {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.3.1';
+	const VERSION = '2.3.2';
 
 	/**
 	 * @var null|Product[]
@@ -231,8 +231,9 @@ class Package {
 	public static function get_available_plugins() {
 		return array(
 			(object) array(
-				'file'       => 'woocommerce-germanized-pro/woocommerce-germanized-pro.php',
-				'product_id' => 148,
+				'file'           => 'woocommerce-germanized-pro/woocommerce-germanized-pro.php',
+				'product_id'     => 148,
+				'is_placeholder' => true,
 			),
 		);
 	}
@@ -242,12 +243,15 @@ class Package {
 	}
 
 	protected static function register_products() {
+		$product_list = apply_filters( 'vendidero_updateable_products', array() );
+
 		/**
-		 * The helper needs to know about the available extensions to update to
+		 * The helper needs to know about available extensions to update to
 		 * support multisite setups where an extension may only be visible/activated on a sub-site.
 		 */
-		$product_data = apply_filters( 'vendidero_updateable_products', array() );
-		$product_list = array_merge( self::get_available_themes(), self::get_available_plugins(), $product_data );
+		if ( is_multisite() && is_network_admin() ) {
+			$product_list = array_merge( self::get_available_themes(), self::get_available_plugins(), $product_list );
+		}
 
 		foreach ( $product_list as $product ) {
 			$products[ $product->file ] = $product;
@@ -276,6 +280,15 @@ class Package {
 						}
 					}
 					restore_current_blog();
+				}
+
+				/**
+				 * Remove placeholder products that are not active within the multisite environment (at least on one blog)
+				 */
+				foreach( $products as $file => $product ) {
+					if ( ! isset( $product->blog_ids ) || ( empty( $product->blog_ids ) && isset( $product->is_placeholder ) && $product->is_placeholder ) ) {
+						unset( $products[ $file ] );
+					}
 				}
 			}
 
