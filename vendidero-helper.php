@@ -3,11 +3,11 @@
  * Plugin Name: vendidero Helper
  * Plugin URI: https://github.com/vendidero/vendidero-helper
  * Description: Manage your vendidero licenses and enjoy automatic updates.
- * Version: 2.3.2
+ * Version: 2.3.3
  * Author: vendidero
  * Author URI: https://vendidero.de
  * Requires at least: 3.8
- * Tested up to: 6.8
+ * Tested up to: 7.1
  * Network: True
  *
  * Text Domain: vendidero-helper

@@ -205,13 +205,13 @@ class Admin {
 			}
 		}
 
-        if ( is_multisite() && ! is_network_admin() ) {
-            $products = Package::get_products( false );
+		if ( is_multisite() && ! is_network_admin() ) {
+			$products = Package::get_products( false );
 
-            if ( empty( $products ) ) {
-                $add_global_page = false;
-            }
-        }
+			if ( empty( $products ) ) {
+				$add_global_page = false;
+			}
+		}
 
 		if ( $add_global_page ) {
 			add_dashboard_page( 'vendidero', 'vendidero', 'manage_options', 'vendidero', array( __CLASS__, 'screen' ) );
@@ -305,6 +305,10 @@ class Admin {
 
 	public static function product_status_notice() {
 		if ( self::screen_is_excluded_for_notices() ) {
+			return;
+		}
+
+		if ( ! current_user_can( 'manage_woocommerce' ) && ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 

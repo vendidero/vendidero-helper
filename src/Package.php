@@ -14,7 +14,7 @@ class Package {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.3.2';
+	const VERSION = '2.3.3';
 
 	/**
 	 * @var null|Product[]
@@ -285,7 +285,7 @@ class Package {
 				/**
 				 * Remove placeholder products that are not active within the multisite environment (at least on one blog)
 				 */
-				foreach( $products as $file => $product ) {
+				foreach ( $products as $file => $product ) {
 					if ( ! isset( $product->blog_ids ) || ( empty( $product->blog_ids ) && isset( $product->is_placeholder ) && $product->is_placeholder ) ) {
 						unset( $products[ $file ] );
 					}

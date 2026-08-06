@@ -42,7 +42,9 @@
 
     <rule ref="WordPress.WP.I18n">
         <properties>
-            <property name="text_domain" type="array" value="vendidero-helper" />
+            <property name="text_domain" type="array">
+                <element value="vendidero-helper" />
+            </property>
         </properties>
     </rule>
 
@@ -73,6 +75,14 @@
 
     <rule ref="Squiz.Classes.ClassFileName">
         <include-pattern>src/</include-pattern>
+    </rule>
+
+    <rule ref="WordPress.WP.Capabilities">
+        <properties>
+            <property name="custom_capabilities" type="array">
+                <element value="manage_woocommerce" />
+            </property>
+        </properties>
     </rule>
 
     <rule ref="Squiz.Classes.ValidClassName">
