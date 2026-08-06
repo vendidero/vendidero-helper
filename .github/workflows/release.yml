@@ -53,11 +53,15 @@ jobs:
         run: echo "Next release version will be -> ${{ steps.bump_version.outputs.VERSION }}"
       - name: Commit version
         id: commit_version
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git add .
           git diff-index --quiet HEAD || git commit -m 'Version bump' --no-verify && git push -f
       - name: Create release branch
         run: git checkout -b release/v${{ steps.bump_version.outputs.VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Bump composer.json version
         id: "bump_composer_version"
         run: |
@@ -74,6 +78,8 @@ jobs:
         run: composer install --no-dev && composer dump-autoload
       - name: Commit build
         id: make-commit
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git add vendor/. --force
           git add .
@@ -93,6 +99,8 @@ jobs:
           prerelease: false
           commitish: release/v${{ steps.bump_version.outputs.VERSION }}
       - name: Remove branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: git checkout master && git branch -D release/v${{ steps.bump_version.outputs.VERSION }} && git push origin --delete release/v${{ steps.bump_version.outputs.VERSION }}
     env:
       NODE_VERSION: "12.x"
